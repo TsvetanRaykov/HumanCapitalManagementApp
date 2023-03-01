@@ -27,4 +27,10 @@
     <Folder Include="Factories\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="wwwroot\css\site.scss">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

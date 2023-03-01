@@ -8,5 +8,25 @@ services:
       - "5432:5432"
     volumes:
       - db:/var/lib/postgresql/data
+  identityserver:
+    build:
+        context: .
+        dockerfile: ./HCM.Auth/Dockerfile
+    depends_on:
+      - db
+    entrypoint: /bin/sh -c "update-ca-certificates && dotnet HCM.Auth.dll"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:7000
+      # - ASPNETCORE_Kestrel__Certificates__Default__Password=<>
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/localhost.pfx
+      - CONNECTIONSTRINGS__IDENTITY=Server=db;Port=5432;Database=identity;User Id=postgres;Password=zHBn!weo6U
+      - CONNECTIONSTRINGS__IDENTITYSERVER=Server=db;Port=5432;Database=identityServer;User Id=postgres;Password=zHBn!weo6U
+    ports:
+      - "7000:7000"
+    volumes:
+      - ./localhost.pfx:/https/localhost.pfx:ro
+      - ./localhost.crt:/usr/local/share/ca-certificate/localhost.crt:ro
+
 volumes:
   db:
