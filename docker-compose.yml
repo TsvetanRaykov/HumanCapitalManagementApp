@@ -1,6 +1,7 @@
 version: "3.9"
 services:
   db:
+    container_name: postgres-db
     environment:
       - POSTGRES_PASSWORD=zHBn!weo6U
     image: postgres:15
@@ -9,6 +10,7 @@ services:
     volumes:
       - db:/var/lib/postgresql/data
   identityserver:
+    container_name: identity-server
     build:
         context: .
         dockerfile: ./HCM.Auth/Dockerfile
@@ -17,13 +19,34 @@ services:
     entrypoint: /bin/sh -c "update-ca-certificates && dotnet HCM.Auth.dll"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=https://+:7000
-      # - ASPNETCORE_Kestrel__Certificates__Default__Password=<>
+      - ASPNETCORE_URLS=https://+:7000;http://+:80
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=U2Jw*nMyaW
       - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/localhost.pfx
       - CONNECTIONSTRINGS__IDENTITY=Server=db;Port=5432;Database=identity;User Id=postgres;Password=zHBn!weo6U
       - CONNECTIONSTRINGS__IDENTITYSERVER=Server=db;Port=5432;Database=identityServer;User Id=postgres;Password=zHBn!weo6U
     ports:
       - "7000:7000"
+    volumes:
+      - ./localhost.pfx:/https/localhost.pfx:ro
+      - ./localhost.crt:/usr/local/share/ca-certificate/localhost.crt:ro
+  api:
+    container_name: hcm-api
+    build:
+        context: .
+        dockerfile: ./HCM.Api/Dockerfile
+    depends_on:
+      - identityserver
+    entrypoint: /bin/sh -c "update-ca-certificates && dotnet HCM.Api.dll"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:7001
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=U2Jw*nMyaW
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/localhost.pfx
+      - AUTHENTICATION__AUTHORITY__INTERNAL=http://identityserver
+      - AUTHENTICATION__AUTHORITY__EXTERNAL=https://localhost:7000
+      - AUTHENTICATION__AUDIENCE=35b86a45-f9b4-43b2-b70b-8bec68c0e503
+    ports:
+      - "7001:7001"
     volumes:
       - ./localhost.pfx:/https/localhost.pfx:ro
       - ./localhost.crt:/usr/local/share/ca-certificate/localhost.crt:ro

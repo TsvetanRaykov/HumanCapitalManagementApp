@@ -5,6 +5,8 @@ VisualStudioVersion = 17.4.33403.182
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HCM.Auth", "HCM.Auth\HCM.Auth.csproj", "{F226B1A9-7970-4D16-87C5-F001BE000207}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HCM.Api", "HCM.Api\HCM.Api.csproj", "{B5B35690-C41F-4FFC-B16F-160CA7DBE68A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{F226B1A9-7970-4D16-87C5-F001BE000207}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F226B1A9-7970-4D16-87C5-F001BE000207}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F226B1A9-7970-4D16-87C5-F001BE000207}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B5B35690-C41F-4FFC-B16F-160CA7DBE68A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5B35690-C41F-4FFC-B16F-160CA7DBE68A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B5B35690-C41F-4FFC-B16F-160CA7DBE68A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B5B35690-C41F-4FFC-B16F-160CA7DBE68A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

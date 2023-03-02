@@ -37,7 +37,7 @@ builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 
@@ -106,7 +106,7 @@ if (app.Environment.IsDevelopment())
             ClientName = "Console Application",
             AllowedGrantTypes = GrantTypes.ClientCredentials,
             AllowedScopes = new List<string> { "https://human-capital-management.com/api" },
-            AllowedCorsOrigins = new List<string> { "https://api:7001" }
+            AllowedCorsOrigins = new List<string> { "https://api:7001", "https://localhost:7001" }
         }.ToEntity(), new Client
         {
             ClientId = Guid.NewGuid().ToString(),
