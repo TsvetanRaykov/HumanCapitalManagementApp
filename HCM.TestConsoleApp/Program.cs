@@ -1,7 +1,7 @@
 ﻿using IdentityModel.Client;
 using System.Net.Http.Headers;
 
-Thread.Sleep(10000);
+Thread.Sleep(5000);
 
 using var identityServerHttpClient = new HttpClient
 {

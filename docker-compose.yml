@@ -55,6 +55,30 @@ services:
     volumes:
       - ./localhost.pfx:/https/localhost.pfx:ro
       - ./localhost.crt:/usr/local/share/ca-certificates/localhost.crt:ro
+  webapplication:
+    container_name: webapplication
+    build:
+        context: .
+        dockerfile: ./HCM.App/Dockerfile
+    depends_on:
+      - api
+      - identityserver
+    entrypoint: /bin/sh -c "update-ca-certificates && dotnet HCM.App.dll"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:7002
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=U2Jw*nMyaW
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/localhost.pfx
+      - AUTHENTICATION__AUTHORITY=https://identityserver:7000
+      - AUTHENTICATION__CLIENTID=facc4d2a-f699-43ca-b288-cbc6fe4434c2
+      - AUTHENTICATION__CLIENTSECRET=AeSrYw9#6t
+    networks:
+      - hcm-net
+    ports:
+      - "7002:7002"
+    volumes:
+      - ./localhost.pfx:/https/localhost.pfx:ro
+      - ./localhost.crt:/usr/local/share/ca-certificates/localhost.crt:ro
   consoleapplication:
     container_name: consoleapplication
     networks:
