@@ -3,23 +3,16 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(jwtBearerOptions =>
     {
-        jwtBearerOptions.Authority = builder.Configuration["Authentication:Authority:Internal"];
+        jwtBearerOptions.Authority = builder.Configuration["Authentication:Authority"];
         jwtBearerOptions.Audience = builder.Configuration["Authentication:Audience"];
 
         jwtBearerOptions.TokenValidationParameters.ValidateAudience = true;
         jwtBearerOptions.TokenValidationParameters.ValidateIssuer = true;
         jwtBearerOptions.TokenValidationParameters.ValidateIssuerSigningKey = true;
-        jwtBearerOptions.RequireHttpsMetadata = false;
-        jwtBearerOptions.TokenValidationParameters.ValidIssuers = new List<string>
-        {
-            builder.Configuration["Authentication:Authority:Internal"],
-            builder.Configuration["Authentication:Authority:External"]
-        };
+
     });
 
 builder.Services.AddAuthorization(authorizationOptions =>
@@ -37,15 +30,11 @@ builder.Services.AddCors(corsOptions =>
 {
     corsOptions.AddDefaultPolicy(corsPolicyBuilder =>
         {
-            corsPolicyBuilder
-                .AllowAnyOrigin()
-                .AllowAnyMethod()
-                .AllowAnyHeader();
+            corsPolicyBuilder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
         }
     );
 });
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(swaggerGenOptions =>
 {
@@ -62,7 +51,7 @@ builder.Services.AddSwaggerGen(swaggerGenOptions =>
         {
             ClientCredentials = new OpenApiOAuthFlow
             {
-                TokenUrl = new Uri($"{builder.Configuration["Authentication:Authority:External"]}/connect/token"),
+                TokenUrl = new Uri($"{builder.Configuration["Authentication:Authority"]}/connect/token"),
                 Scopes = { { "https://human-capital-management.com/api", "API" } }
             }
         }

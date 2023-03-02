@@ -1,0 +1,20 @@
+{
+  "profiles": {
+    "HCM.TestConsoleApp": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "AUTHENTICATION__AUTHORITY": "https://identityserver:7000",
+        "AUTHENTICATION__CLIENTID": "b4c0b49b-e2f4-445a-9bc0-836bdca210dc",
+        "AUTHENTICATION__CLIENTSECRET": "AeSrYw9#6t"
+      }
+    },
+    "Docker": {
+      "commandName": "Docker",
+      "environmentVariables": {
+        "AUTHENTICATION__AUTHORITY": "https://identityserver:7000",
+        "AUTHENTICATION__CLIENTID": "b4c0b49b-e2f4-445a-9bc0-836bdca210dc",
+        "AUTHENTICATION__CLIENTSECRET": "AeSrYw9#6t"
+      }
+    }
+  }
+}
