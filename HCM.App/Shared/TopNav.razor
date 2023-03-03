@@ -1,0 +1,52 @@
+﻿@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@inject NavigationManager Navigation
+@inject SignOutSessionStateManager SignOutManager
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                <AuthorizeView>
+                    <Authorized>
+                        @*Hello, @context.User.Identity?.Name!*@
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                @context.User.Identity?.Name
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDropdown">
+                                <li><a class="dropdown-item" href="profile">Profile</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#" @onclick="BeginSignOut">Log out</a></li>
+                            </ul>
+                        </li>
+                    </Authorized>
+                    <NotAuthorized>
+                        <li class="nav-item">
+                            <a class="nav-link" href="authentication/login">Log in</a>
+                        </li>
+                    </NotAuthorized>
+                </AuthorizeView>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Link</a>
+                </li>
+
+            </ul>
+
+        </div>
+    </div>
+</nav>
+
+
+
+@code {
+    private async Task BeginSignOut(MouseEventArgs args)
+    {
+        await SignOutManager.SetSignOutState();
+
+        Navigation.NavigateTo("authentication/logout");
+    }
+}

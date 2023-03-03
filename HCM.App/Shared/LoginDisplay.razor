@@ -1,0 +1,33 @@
+﻿@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@inject NavigationManager Navigation
+@inject SignOutSessionStateManager SignOutManager
+
+<AuthorizeView>
+    <Authorized>
+        @*Hello, @context.User.Identity?.Name!*@
+        
+        <div class="dropdown">
+            <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
+                @context.User.Identity?.Name
+            </a>
+
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                <li><a class="dropdown-item" href="profile">Profile</a></li>
+                <li><button class="nav-link btn btn-link" @onclick="BeginSignOut">Log out</button></li>
+            </ul>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <a href="authentication/login">Log in</a>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code
+{
+    private async Task BeginSignOut(MouseEventArgs args)
+    {
+        await SignOutManager.SetSignOutState();
+
+        Navigation.NavigateTo("authentication/logout");
+    }
+}

@@ -1,0 +1,34 @@
+﻿@page "/Profile"
+@using System.Security.Claims
+
+@inject AuthenticationStateProvider GetAuthenticationStateAsync
+
+<h3>Profile</h3>
+<ul>
+    @foreach (var claim in claims)
+    {
+        <li>@claim.Type <b>@claim.Value</b></li>
+    }
+</ul>
+
+@code {
+
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationStateTask { get; set; }
+
+    private IEnumerable<Claim> claims;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateTask;
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            Console.WriteLine($"{user.Identity.Name} is authenticated.");
+
+
+            claims = user.Claims;
+        }
+    }
+}

@@ -1,50 +1,29 @@
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using HCM.App;
+using HCM.App.Handlers;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-builder.Services.AddAuthentication(authenticationOptions =>
-{
-    authenticationOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    authenticationOptions.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
-})
-    .AddCookie()
-    .AddOpenIdConnect(openIdConnectOptions =>
+builder.RootComponents.Add<App>("#app");
+
+builder.RootComponents.Add<HeadOutlet>("head::after");
+
+builder.Services.AddHttpClient("Api", httpClient =>
     {
-        openIdConnectOptions.Authority = builder.Configuration["Authentication:Authority"];
-        openIdConnectOptions.ClientId = builder.Configuration["Authentication:ClientId"];
-        openIdConnectOptions.ClientSecret = builder.Configuration["Authentication:ClientSecret"];
-        openIdConnectOptions.GetClaimsFromUserInfoEndpoint = true;
-        openIdConnectOptions.ResponseType = "code";
-        openIdConnectOptions.Scope.Add("https://human-capital-management.com/api");
-        openIdConnectOptions.SaveTokens = true;
-    });
+        httpClient.BaseAddress = new Uri("https://localhost:7001");
+    })
+    .AddHttpMessageHandler<ApiAuthorizationMessageHandler>();
 
-builder.Services.AddAuthorization();
-
-builder.Services.AddHttpClient();
-
-// Add services to the container.
-builder.Services.AddRazorPages();
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
+builder.Services.AddOidcAuthentication(remoteAuthenticationOptions =>
 {
-    app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
-}
+    remoteAuthenticationOptions.ProviderOptions.Authority = builder.Configuration["Authentication:Authority"];
+    remoteAuthenticationOptions.ProviderOptions.ClientId = builder.Configuration["Authentication:ClientId"];
+    remoteAuthenticationOptions.ProviderOptions.ResponseType = "code";
+    remoteAuthenticationOptions.ProviderOptions.DefaultScopes.Add("https://human-capital-management.com/api");
+    remoteAuthenticationOptions.ProviderOptions.DefaultScopes.Add("email");
+});
 
-app.UseHttpsRedirection();
-app.UseStaticFiles();
+builder.Services.AddScoped<ApiAuthorizationMessageHandler>();
 
-app.UseRouting();
-
-app.UseAuthentication();
-app.UseAuthorization();
-
-app.MapRazorPages();
-
-app.Run();
+await builder.Build().RunAsync();

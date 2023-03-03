@@ -8,7 +8,7 @@ namespace HCM.Auth.Factories;
 
 public class ApplicationUserClaimsPrincipalFactory : UserClaimsPrincipalFactory<ApplicationUser>
 {
-    public ApplicationUserClaimsPrincipalFactory(UserManager<ApplicationUser> userManager, IOptions<IdentityOptions> optionsAccessor) 
+    public ApplicationUserClaimsPrincipalFactory(UserManager<ApplicationUser> userManager, IOptions<IdentityOptions> optionsAccessor)
         : base(userManager, optionsAccessor)
     {
     }
@@ -25,6 +25,12 @@ public class ApplicationUserClaimsPrincipalFactory : UserClaimsPrincipalFactory<
         if (!string.IsNullOrWhiteSpace(user.FamilyName))
         {
             claimsIdentity.AddClaim(new Claim(JwtClaimTypes.FamilyName, user.FamilyName));
+        }
+
+        var roles = await UserManager.GetRolesAsync(user);
+        if (roles.Any())
+        {
+            claimsIdentity.AddClaims(roles.Select(role => new Claim(JwtClaimTypes.Role, role)));
         }
 
         return claimsIdentity;

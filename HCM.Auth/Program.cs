@@ -58,17 +58,27 @@ if (app.Environment.IsDevelopment())
     await scope.ServiceProvider.GetRequiredService<ConfigurationDbContext>().Database.MigrateAsync();
     await scope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>().Database.MigrateAsync();
 
+
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+
+    if (!await roleManager.RoleExistsAsync("admin"))
+    {
+        await roleManager.CreateAsync(new IdentityRole("admin"));
+    }
 
     if (await userManager.FindByNameAsync("tsvetan.raykov") == null)
     {
-        await userManager.CreateAsync(new ApplicationUser
+        var admin = new ApplicationUser
         {
             UserName = "tsvetan.raykov",
             GivenName = "Tsvetan",
             FamilyName = "Raykov",
             Email = "tsvetan.raykov@gmail.com"
-        }, "P@$$w0rd");
+        };
+
+        await userManager.CreateAsync(admin, "P@$$w0rd");
+        await userManager.AddToRoleAsync(admin, "admin");
     }
 
     var configurationDbContext = scope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
@@ -84,7 +94,6 @@ if (app.Environment.IsDevelopment())
 
         await configurationDbContext.SaveChangesAsync();
     }
-
 
     if (!await configurationDbContext.ApiScopes.AnyAsync())
     {
