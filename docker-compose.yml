@@ -5,8 +5,6 @@ services:
     environment:
       - POSTGRES_PASSWORD=zHBn!weo6U
     image: postgres:15
-    networks:
-      - hcm-net
     ports:
       - "5432:5432"
     volumes:
@@ -26,8 +24,6 @@ services:
       - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/localhost.pfx
       - CONNECTIONSTRINGS__IDENTITY=Server=db;Port=5432;Database=identity;User Id=postgres;Password=zHBn!weo6U
       - CONNECTIONSTRINGS__IDENTITYSERVER=Server=db;Port=5432;Database=identityServer;User Id=postgres;Password=zHBn!weo6U
-    networks:
-      - hcm-net
     ports:
       - "7000:7000"
     volumes:
@@ -48,8 +44,6 @@ services:
       - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/localhost.pfx
       - AUTHENTICATION__AUTHORITY=https://identityserver:7000
       - AUTHENTICATION__AUDIENCE=35b86a45-f9b4-43b2-b70b-8bec68c0e503
-    networks:
-      - hcm-net
     ports:
       - "7001:7001"
     volumes:
@@ -72,8 +66,6 @@ services:
       - AUTHENTICATION__AUTHORITY=https://identityserver:7000
       - AUTHENTICATION__CLIENTID=facc4d2a-f699-43ca-b288-cbc6fe4434c2
       - AUTHENTICATION__CLIENTSECRET=AeSrYw9#6t
-    networks:
-      - hcm-net
     ports:
       - "7002:7002"
     volumes:
@@ -81,8 +73,6 @@ services:
       - ./localhost.crt:/usr/local/share/ca-certificates/localhost.crt:ro
   consoleapplication:
     container_name: consoleapplication
-    networks:
-      - hcm-net
     build:
         context: .
         dockerfile: ./HCM.TestConsoleApp/Dockerfile
@@ -96,8 +86,19 @@ services:
       - AUTHENTICATION__CLIENTSECRET=AeSrYw9#6t
     volumes:
       - ./localhost.crt:/usr/local/share/ca-certificates/localhost.crt:ro
-
+  singlepageapplication:
+    build:
+      context: .
+      dockerfile: ./SinglePageApplication/Dockerfile
+    depends_on:
+      - api
+      - identityserver
+    ports:
+      - "7003:7003"
+    volumes:
+      - ./nginx/ssl/:/etc/nginx/ssl/
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./localhost.key:/etc/nginx/ssl/localhost.key:ro
+      - ./localhost.crt:/etc/nginx/ssl/localhost.crt:ro
 volumes:
   db:
-networks:
-  hcm-net: {}
