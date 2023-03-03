@@ -43,7 +43,7 @@ services:
       - ASPNETCORE_Kestrel__Certificates__Default__Password=U2Jw*nMyaW
       - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/localhost.pfx
       - AUTHENTICATION__AUTHORITY=https://identityserver:7000
-      - AUTHENTICATION__AUDIENCE=35b86a45-f9b4-43b2-b70b-8bec68c0e503
+      - AUTHENTICATION__AUDIENCE=HCM.Api
     ports:
       - "7001:7001"
     volumes:
@@ -52,7 +52,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: ./SinglePageApplication/Dockerfile
+      dockerfile: ./HCM.App/Dockerfile
     depends_on:
       - api
       - identityserver

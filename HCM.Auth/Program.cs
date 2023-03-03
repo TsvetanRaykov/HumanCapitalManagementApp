@@ -8,6 +8,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Infrastructure;
 using System.Reflection;
+using HCM.Shared;
+using IdentityModel;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -87,9 +90,9 @@ if (app.Environment.IsDevelopment())
     {
         await configurationDbContext.ApiResources.AddAsync(new ApiResource
         {
-            Name = Guid.NewGuid().ToString(),
+            Name = "HCM.Api",
             DisplayName = "API",
-            Scopes = new List<string> { "https://human-capital-management.com/api" }
+            Scopes = new List<string> { HcmConstants.SupportedCustomOidcScopes.HcmApiScope }
         }.ToEntity());
 
         await configurationDbContext.SaveChangesAsync();
@@ -99,7 +102,7 @@ if (app.Environment.IsDevelopment())
     {
         await configurationDbContext.ApiScopes.AddAsync(new ApiScope
         {
-            Name = "https://human-capital-management.com/api",
+            Name = HcmConstants.SupportedCustomOidcScopes.HcmApiScope,
             DisplayName = "API"
         }.ToEntity());
 
@@ -110,31 +113,47 @@ if (app.Environment.IsDevelopment())
     {
         await configurationDbContext.Clients.AddRangeAsync(new Client
         {
-            ClientId = Guid.NewGuid().ToString(),
-            ClientSecrets = new List<Secret> { new("AeSrYw9#6t".Sha512()) },
-            ClientName = "Console Application",
-            AllowedGrantTypes = GrantTypes.ClientCredentials,
-            AllowedScopes = new List<string> { "https://human-capital-management.com/api" },
-            AllowedCorsOrigins = new List<string> { "https://api:7001", "https://localhost:7001" }
-        }.ToEntity(), new Client
-        {
-            ClientId = Guid.NewGuid().ToString(),
-            ClientSecrets = new List<Secret> { new("AeSrYw9#6t".Sha512()) },
-            ClientName = "Web Application",
-            AllowedGrantTypes = GrantTypes.Code,
-            AllowedScopes = new List<string> { "https://human-capital-management.com/api", "profile", "openid", "email" },
-            RedirectUris = new List<string> { "https://app:7002/signin-oidc" },
-            PostLogoutRedirectUris = new List<string> { "https://app:7002/signout-callback-oidc" }
-        }.ToEntity(), new Client
-        {
-            ClientId = Guid.NewGuid().ToString(),
+            ClientId = "Human.Capital.Management.App",
             RequireClientSecret = false,
-            ClientName = "Single Page Application",
+            ClientName = "Human Capital Management App",
             AllowedGrantTypes = GrantTypes.Code,
-            AllowedScopes = new List<string> { "https://human-capital-management.com/api", "profile", "openid", "email" },
-            AllowedCorsOrigins = new List<string> { "https://spa:7003" },
-            RedirectUris = new List<string> { "https://spa:7003/authentication/login-callback" },
-            PostLogoutRedirectUris = new List<string> { "https://spa:7003/authentication/logout-callback" }
+            AllowedScopes = new List<string>
+            {
+                HcmConstants.SupportedCustomOidcScopes.HcmApiScope,
+                "profile",
+                "openid",
+                "email",
+                "roles"
+            },
+            AllowedCorsOrigins = new List<string>
+            {
+                "https://singlepageapplication:7003",
+                "https://localhost:7003",
+                "https://localhost:7103"
+            },
+            RedirectUris = new List<string> {
+                "https://singlepageapplication:7003/authentication/login-callback",
+                "https://localhost:7003/authentication/login-callback",
+                "https://localhost:7103/authentication/login-callback"
+            },
+            PostLogoutRedirectUris = new List<string>
+            {
+                "https://singlepageapplication:7003/authentication/logout-callback",
+                "https://localhost:7003/authentication/logout-callback",
+                "https://localhost:7103/authentication/logout-callback",
+            }
+        }.ToEntity(), new Client
+        {
+            ClientId = "Api.Test",
+            ClientSecrets = new List<Secret> { new("t7687kH3Hp".Sha512()) },
+            ClientName = "Api Test Client",
+            AllowedGrantTypes = GrantTypes.ClientCredentials,
+            AllowedScopes = new List<string> { HcmConstants.SupportedCustomOidcScopes.HcmApiScope },
+            AllowedCorsOrigins = new List<string>
+            {
+                "https://api:7001",
+                "https://localhost:7001"
+            }
         }.ToEntity());
 
         await configurationDbContext.SaveChangesAsync();
@@ -145,7 +164,13 @@ if (app.Environment.IsDevelopment())
         await configurationDbContext.IdentityResources.AddRangeAsync(
             new IdentityResources.OpenId().ToEntity(),
             new IdentityResources.Profile().ToEntity(),
-            new IdentityResources.Email().ToEntity());
+            new IdentityResources.Email().ToEntity(),
+            new IdentityResource
+            {
+                Name = "roles",
+                DisplayName = "Roles",
+                UserClaims = { JwtClaimTypes.Role }
+            }.ToEntity());
 
         await configurationDbContext.SaveChangesAsync();
     }

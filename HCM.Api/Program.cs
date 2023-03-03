@@ -1,3 +1,4 @@
+using HCM.Shared;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.OpenApi.Models;
 
@@ -20,7 +21,7 @@ builder.Services.AddAuthorization(authorizationOptions =>
     authorizationOptions.AddPolicy("ApiScope", policyBuilder =>
     {
         policyBuilder.RequireAuthenticatedUser()
-            .RequireClaim("scope", "https://human-capital-management.com/api");
+            .RequireClaim("scope", HcmConstants.SupportedCustomOidcScopes.HcmApiScope);
     });
 });
 
@@ -52,7 +53,7 @@ builder.Services.AddSwaggerGen(swaggerGenOptions =>
             ClientCredentials = new OpenApiOAuthFlow
             {
                 TokenUrl = new Uri($"{builder.Configuration["Authentication:Authority"]}/connect/token"),
-                Scopes = { { "https://human-capital-management.com/api", "API" } }
+                Scopes = { { HcmConstants.SupportedCustomOidcScopes.HcmApiScope, "API" } }
             }
         }
     });
@@ -68,7 +69,7 @@ builder.Services.AddSwaggerGen(swaggerGenOptions =>
                     Id = "oauth2"
                 }
             },
-            new List<string>{ "https://human-capital-management.com/api" }
+            new List<string>{ HcmConstants.SupportedCustomOidcScopes.HcmApiScope }
         }
     });
 });
