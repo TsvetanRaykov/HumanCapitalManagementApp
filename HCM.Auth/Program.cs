@@ -152,7 +152,8 @@ if (app.Environment.IsDevelopment())
             AllowedCorsOrigins = new List<string>
             {
                 "https://api:7001",
-                "https://localhost:7001"
+                "https://localhost:7001",
+                "https://localhost:7139"
             }
         }.ToEntity());
 

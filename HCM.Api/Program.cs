@@ -1,8 +1,23 @@
+using System.Reflection;
+using HCM.Api.Data;
 using HCM.Shared;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDbContext<ApiDbContext>((serviceProvider, dbContextOptionsBuilder) =>
+{
+    var connectionString = serviceProvider.GetRequiredService<IConfiguration>().GetConnectionString("HcmDb");
+    var migrationsAssembly = typeof(ApiDbContext).GetTypeInfo().Assembly.GetName().Name;
+    
+    dbContextOptionsBuilder.UseNpgsql(connectionString, optionsBuilder =>
+    {
+        optionsBuilder.MigrationsAssembly(migrationsAssembly);
+    });
+});
+
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(jwtBearerOptions =>
