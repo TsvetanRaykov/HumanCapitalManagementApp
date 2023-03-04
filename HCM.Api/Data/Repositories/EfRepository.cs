@@ -1,42 +1,41 @@
-﻿using HCM.Api.Data.Contracts;
+﻿using HCM.Shared.Data.Contracts;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace HCM.Api.Data.Repositories;
 
 public class EfRepository<TEntity> : IRepository<TEntity>
     where TEntity : class
 {
-    public void Dispose()
+    private readonly ApiDbContext _dbContext;
+    private readonly DbSet<TEntity> _dbSet;
+
+    public EfRepository(ApiDbContext dbContext)
     {
-        throw new NotImplementedException();
+        _dbContext = dbContext;
+        _dbSet = _dbContext.Set<TEntity>();
     }
 
-    public IQueryable<TEntity> All()
-    {
-        throw new NotImplementedException();
-    }
+    public void Dispose() => _dbContext.Dispose();
 
-    public IQueryable<TEntity> AllAsNoTracking()
-    {
-        throw new NotImplementedException();
-    }
+    public IQueryable<TEntity> All() => _dbSet;
 
-    public Task AddAsync(TEntity entity)
-    {
-        throw new NotImplementedException();
-    }
+    public IQueryable<TEntity> AllAsNoTracking() => _dbSet.AsNoTracking();
+
+    public ValueTask<EntityEntry<TEntity>> AddAsync(TEntity entity) => _dbSet.AddAsync(entity);
 
     public void Update(TEntity entity)
     {
-        throw new NotImplementedException();
+        var entry = _dbContext.Entry(entity);
+        if (entry.State == EntityState.Detached)
+        {
+            _dbSet.Attach(entity);
+        }
+
+        entry.State = EntityState.Modified;
     }
 
-    public void Delete(TEntity entity)
-    {
-        throw new NotImplementedException();
-    }
+    public void Delete(TEntity entity) => _dbSet.Remove(entity);
 
-    public Task<int> SaveChangesAsync()
-    {
-        throw new NotImplementedException();
-    }
+    public Task<int> SaveChangesAsync() => _dbContext.SaveChangesAsync();
 }

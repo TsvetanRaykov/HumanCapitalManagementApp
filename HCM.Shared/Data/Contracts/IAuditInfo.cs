@@ -1,4 +1,4 @@
-﻿namespace HCM.Api.Data.Contracts;
+﻿namespace HCM.Shared.Data.Contracts;
 
 public interface IAuditInfo
 {

@@ -1,4 +1,4 @@
-﻿using HCM.Api.Data.Contracts;
+﻿using HCM.Shared.Data.Contracts;
 
 namespace HCM.Api.Data.Models;
 

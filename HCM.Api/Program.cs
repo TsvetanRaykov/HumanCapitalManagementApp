@@ -1,9 +1,11 @@
-using System.Reflection;
 using HCM.Api.Data;
+using HCM.Api.Data.Repositories;
 using HCM.Shared;
+using HCM.Shared.Data.Contracts;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,13 +13,12 @@ builder.Services.AddDbContext<ApiDbContext>((serviceProvider, dbContextOptionsBu
 {
     var connectionString = serviceProvider.GetRequiredService<IConfiguration>().GetConnectionString("HcmDb");
     var migrationsAssembly = typeof(ApiDbContext).GetTypeInfo().Assembly.GetName().Name;
-    
+
     dbContextOptionsBuilder.UseNpgsql(connectionString, optionsBuilder =>
     {
         optionsBuilder.MigrationsAssembly(migrationsAssembly);
     });
 });
-
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(jwtBearerOptions =>
@@ -39,6 +40,8 @@ builder.Services.AddAuthorization(authorizationOptions =>
             .RequireClaim("scope", HcmConstants.SupportedCustomOidcScopes.HcmApiScope);
     });
 });
+
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 builder.Services.AddControllers();
 
@@ -89,15 +92,21 @@ builder.Services.AddSwaggerGen(swaggerGenOptions =>
     });
 });
 
+builder.Services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
+
 var app = builder.Build();
 
-app.UseCors();
-// Configure the HTTP request pipeline.
+
 if (app.Environment.IsDevelopment())
 {
+    using var scope = app.Services.CreateScope();
+    await scope.ServiceProvider.GetRequiredService<ApiDbContext>().Database.MigrateAsync();
+
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors();
 
 app.UseHttpsRedirection();
 

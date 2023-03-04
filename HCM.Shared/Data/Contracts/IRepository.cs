@@ -1,4 +1,6 @@
-﻿namespace HCM.Api.Data.Contracts;
+﻿using Microsoft.EntityFrameworkCore.ChangeTracking;
+
+namespace HCM.Shared.Data.Contracts;
 
 public interface IRepository<TEntity> : IDisposable
     where TEntity : class
@@ -7,7 +9,7 @@ public interface IRepository<TEntity> : IDisposable
 
     IQueryable<TEntity> AllAsNoTracking();
 
-    Task AddAsync(TEntity entity);
+    ValueTask<EntityEntry<TEntity>> AddAsync(TEntity entity);
 
     void Update(TEntity entity);
 

@@ -1,5 +1,5 @@
-﻿using HCM.Api.Data.Contracts;
-using HCM.Api.Data.Models;
+﻿using HCM.Api.Data.Models;
+using HCM.Shared.Data.Contracts;
 using Microsoft.EntityFrameworkCore;
 
 namespace HCM.Api.Data;
@@ -23,10 +23,10 @@ public class ApiDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
-        ConfigureUserIdentityRelations(builder);
+        ConfigureEntityRelations(builder);
     }
 
-    private void ConfigureUserIdentityRelations(ModelBuilder modelBuilder)
+    private void ConfigureEntityRelations(ModelBuilder modelBuilder)
     {
         ConfigureEmployees(modelBuilder);
         ConfigureJobs(modelBuilder);

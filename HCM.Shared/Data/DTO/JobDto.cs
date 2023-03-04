@@ -1,13 +1,11 @@
-﻿using HCM.Shared.Data.Contracts;
+﻿namespace HCM.Shared.Data.DTO;
+using Contracts;
 
-namespace HCM.Api.Data.Models;
-
-public class Job : BaseModel<int>
+public class JobDto : BaseModel<int>
 {
     public string JobTitle { get; set; }
     public string? JobDescription { get; set; }
     public decimal MinSalary { get; set; }
     public decimal MaxSalary { get; set; }
-    public virtual ICollection<Employee>? Employees { get; set; }
-
+    public ICollection<EmployeeDto>? Employees { get; set; }
 }
