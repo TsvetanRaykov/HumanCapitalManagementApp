@@ -16,7 +16,11 @@ public class EmployeeDto : BaseModel<int>
 
     public decimal Salary { get; set; }
 
-    public JobDto Job { get; set; }
+    public int JobId { get; set; }
+   
+    public int DepartmentId { get; set; }
 
-    public DepartmentDto Department { get; set; }
+    public JobDto? Job { get; set; }
+
+    public DepartmentDto? Department { get; set; }
 }

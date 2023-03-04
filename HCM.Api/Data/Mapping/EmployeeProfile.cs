@@ -16,5 +16,6 @@ public class EmployeeProfile : Profile
             .ForMember(dest => dest.ModifiedOn, opt => opt.Ignore());
 
         CreateMap<Employee, EmployeeDto>();
+
     }
 }

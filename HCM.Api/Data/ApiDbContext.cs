@@ -1,6 +1,7 @@
 ﻿using HCM.Api.Data.Models;
 using HCM.Shared.Data.Contracts;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace HCM.Api.Data;
 
@@ -24,6 +25,38 @@ public class ApiDbContext : DbContext
     {
         base.OnModelCreating(builder);
         ConfigureEntityRelations(builder);
+        SetDateKindUtcToDateTimeEntities(builder);
+    }
+
+    private void SetDateKindUtcToDateTimeEntities(ModelBuilder builder)
+    {
+        var dateTimeConverter = new ValueConverter<DateTime, DateTime>(
+            v => v.ToUniversalTime(),
+            v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+
+        var nullableDateTimeConverter = new ValueConverter<DateTime?, DateTime?>(
+            v => v.HasValue ? v.Value.ToUniversalTime() : v,
+            v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : v);
+
+        foreach (var entityType in builder.Model.GetEntityTypes())
+        {
+            if (entityType.IsKeyless)
+            {
+                continue;
+            }
+
+            foreach (var property in entityType.GetProperties())
+            {
+                if (property.ClrType == typeof(DateTime))
+                {
+                    property.SetValueConverter(dateTimeConverter);
+                }
+                else if (property.ClrType == typeof(DateTime?))
+                {
+                    property.SetValueConverter(nullableDateTimeConverter);
+                }
+            }
+        }
     }
 
     private void ConfigureEntityRelations(ModelBuilder modelBuilder)
@@ -46,7 +79,7 @@ public class ApiDbContext : DbContext
     {
         modelBuilder.Entity<Job>(entity =>
         {
-            entity.Property(p => p.JobTitle).IsRequired().HasMaxLength(50);
+            entity.Property(p => p.Title).IsRequired().HasMaxLength(50);
             entity.Property(p => p.MinSalary).IsRequired().HasPrecision(8, 2);
             entity.Property(p => p.MaxSalary).IsRequired().HasPrecision(8, 2);
         });
@@ -69,6 +102,7 @@ public class ApiDbContext : DbContext
                 .HasForeignKey(e => e.DepartmentId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            entity.HasIndex(p => p.Email).IsUnique();
             entity.Property(p => p.FirstName).IsRequired().HasMaxLength(30);
             entity.Property(p => p.LastName).IsRequired().HasMaxLength(30);
             entity.Property(p => p.Email).IsRequired().HasMaxLength(100);

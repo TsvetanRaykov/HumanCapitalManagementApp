@@ -12,6 +12,7 @@ public class DepartmentsController : BaseController
     private readonly IRepository<Department> _departmentRepository;
     private readonly IMapper _mapper;
     private const string DepartmentNotFountMessage = "Department with id: {0} not found";
+    private const string DepartmentNotEmptyMessage = "There are employees assigned to department '{0}' ";
 
     public DepartmentsController(IRepository<Department> departmentRepository, IMapper mapper)
     {
@@ -28,16 +29,6 @@ public class DepartmentsController : BaseController
         return Ok(departments);
     }
 
-    [HttpGet("{id:int}")]
-    public async Task<IActionResult> GetDepartmentById(int id)
-    {
-        var department = await _departmentRepository.All().FirstOrDefaultAsync(d => d.Id == id);
-        if (department == null)
-            return NotFound(string.Format(DepartmentNotFountMessage, id));
-
-        return Ok(_mapper.Map<DepartmentDto>(department));
-    }
-
     [HttpPost]
     public async Task<IActionResult> CreateDepartment([FromBody] DepartmentDto department)
     {
@@ -46,7 +37,7 @@ public class DepartmentsController : BaseController
         await _departmentRepository.AddAsync(newDepartment);
         await _departmentRepository.SaveChangesAsync();
 
-        return Ok(newDepartment.Id);
+        return Ok(_mapper.Map<DepartmentDto>(newDepartment));
     }
 
     [HttpPut]
@@ -69,10 +60,16 @@ public class DepartmentsController : BaseController
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteDepartment(int id)
     {
-        var departmentToDelete = await _departmentRepository.All().FirstOrDefaultAsync(d => d.Id == id);
+        var departments = await _mapper.ProjectTo<Department>(_departmentRepository.All())
+            .ToArrayAsync();
+
+        var departmentToDelete = departments.FirstOrDefault(d => d.Id == id);
 
         if (departmentToDelete == null)
             return NotFound(string.Format(DepartmentNotFountMessage, id));
+
+        if (departmentToDelete.Employees != null && departmentToDelete.Employees.Any())
+            return UnprocessableEntity(string.Format(DepartmentNotEmptyMessage, departmentToDelete.Name));
 
         _departmentRepository.Delete(departmentToDelete);
         await _departmentRepository.SaveChangesAsync();

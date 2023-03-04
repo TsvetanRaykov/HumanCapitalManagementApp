@@ -12,6 +12,7 @@ public class JobsController : BaseController
     private readonly IRepository<Job> _jobRepository;
     private readonly IMapper _mapper;
     private const string JobNotFountMessage = "Job with id: {0} not found";
+    private const string JobIsAssignedMessage = "There are employees assigned to job '{0}' ";
 
     public JobsController(IRepository<Job> jobRepository, IMapper mapper)
     {
@@ -28,16 +29,6 @@ public class JobsController : BaseController
         return Ok(jobs);
     }
 
-    //[HttpGet("{id:int}")]
-    //public async Task<IActionResult> GetJobById(int id)
-    //{
-    //    var job = await _jobRepository.All().FirstOrDefaultAsync(j => j.Id == id);
-    //    if (job == null)
-    //        return NotFound(string.Format(JobNotFountMessage, id));
-
-    //    return Ok(_mapper.Map<JobDto>(job));
-    //}
-
     [HttpPost]
     public async Task<IActionResult> CreateJob([FromBody] JobDto job)
     {
@@ -46,7 +37,7 @@ public class JobsController : BaseController
         await _jobRepository.AddAsync(newJob);
         await _jobRepository.SaveChangesAsync();
 
-        return Ok(newJob.Id);
+        return Ok(_mapper.Map<JobDto>(newJob));
     }
 
     [HttpPut]
@@ -69,16 +60,21 @@ public class JobsController : BaseController
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteJob(int id)
     {
-        var jobToDelete = await _jobRepository.All().FirstOrDefaultAsync(j => j.Id == id);
+        var jobs = await _mapper.ProjectTo<Job>(_jobRepository.All())
+            .ToArrayAsync();
+
+        var jobToDelete = jobs.FirstOrDefault(d => d.Id == id);
 
         if (jobToDelete == null)
             return NotFound(string.Format(JobNotFountMessage, id));
+
+        if (jobToDelete.Employees != null && jobToDelete.Employees.Any())
+            return UnprocessableEntity(string.Format(JobIsAssignedMessage, jobToDelete.Title));
 
         _jobRepository.Delete(jobToDelete);
         await _jobRepository.SaveChangesAsync();
 
         return Ok(_mapper.Map<JobDto>(jobToDelete));
     }
-
 
 }

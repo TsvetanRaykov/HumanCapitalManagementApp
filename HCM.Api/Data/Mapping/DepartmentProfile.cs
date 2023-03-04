@@ -15,5 +15,6 @@ public class DepartmentProfile : Profile
             .ForMember(dest => dest.ModifiedOn, opt => opt.Ignore());
 
         CreateMap<Department, DepartmentDto>();
+        CreateMap<Department, Department>();
     }
 }
