@@ -1,6 +1,8 @@
 ﻿@page "/ListJobs"
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.QuickGrid
 @using HCM.Shared.Data.DTO
+@using HCM.App.Components
 @attribute [Authorize]
 @inject IHttpClientFactory HttpClientFactory
 
@@ -15,37 +17,76 @@
 }
 else
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Title</th>
-                <th>Description</th>
-                <th>Min Salary</th>
-                <th>Max Salary</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var jobDto in _jobs)
-            {
-                <tr>
-                    <td>@jobDto.Title</td>
-                    <td>@jobDto.Description</td>
-                    <td>@jobDto.MinSalary</td>
-                    <td>@jobDto.MaxSalary</td>
-                </tr>
+    <QuickGrid Items="_jobs.AsQueryable()">
+        <PropertyColumn Property="j=>j.Title" Sortable="true" Title="Title"></PropertyColumn>
+        <PropertyColumn Property="j=>j.MinSalary" Sortable="true" Title="Minimum Salary"></PropertyColumn>
+        <PropertyColumn Property="j=>j.MaxSalary" Sortable="true" Title="Maximum Salary"></PropertyColumn>
+        <PropertyColumn Property="j=>j.CreatedOn.ToLocalTime()" Sortable="true" Title="When Created" Format="dd.MM.yyyy"></PropertyColumn>
+        <TemplateColumn Title="When Updated">
+            @{
+                if (@context.ModifiedOn.HasValue)
+                {
+                    @context.ModifiedOn.Value.ToLocalTime().ToString("dd.MM.yyyy")
+                }
             }
-        </tbody>
-    </table>
+        </TemplateColumn>
+        <TemplateColumn Title="Actions">
+            <Tooltip Title="Delete Job">
+                <button type="button" class="btn btn-danger" @onclick="@(() => ConfirmDelete(context))"><i class="bi bi-window-dash"></i></button>
+            </Tooltip>
+            <Tooltip Title="Show Employees">
+                <button type="button" class="btn btn-info" @onclick="@(() => ShowEmployees(context))"><i class="bi bi-people"></i></button>
+            </Tooltip>
+        </TemplateColumn>
+    </QuickGrid>
+
+    if (_jobEmployees != null && _jobEmployees.Any())
+    {
+        <p class="p-5">
+            <h5>@(_jobEmployees.First().Job?.Title) employees</h5>
+            <EmployeesListComponent Employees="_jobEmployees"></EmployeesListComponent>
+        </p>
+    }
+
+    <ConfirmComponent ConfirmationChanged="DeleteConfirmed" @ref="DeleteConfirmation"></ConfirmComponent>
 }
 
 @code
 {
     private JobDto[]? _jobs;
+    private JobDto? _jobDtoToDelete;
+    private IQueryable<EmployeeDto>? _jobEmployees;
+
 
     protected override async Task OnInitializedAsync()
     {
         _jobs = await HttpClientFactory.CreateClient("Api").GetFromJsonAsync<JobDto[]>("/api/v1/Jobs");
     }
 
+    private void DeleteConfirmed(bool confirmed)
+    {
+        if (confirmed)
+        {
+            Console.WriteLine($"ConfirmDelete {_jobDtoToDelete?.Title}");
+        }
+    }
 
+    private void ConfirmDelete(JobDto job)
+    {
+        _jobDtoToDelete = job;
+        DeleteConfirmation?.Show("Confirm Job Deletion", $"The job {_jobDtoToDelete.Title} will be deleted.");
+    }
+
+    private ConfirmComponent? DeleteConfirmation { get; set; }
+
+    private void ShowEmployees(JobDto context)
+    {
+        if (context.Employees == null) return;
+
+        foreach (var employee in context.Employees)
+        {
+            employee.Job = context;
+        }
+        _jobEmployees = context.Employees.AsQueryable();
+    }
 }

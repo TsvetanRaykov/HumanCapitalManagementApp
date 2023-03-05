@@ -1,0 +1,56 @@
+﻿@using Microsoft.AspNetCore.Components.QuickGrid
+@using HCM.Shared.Data.DTO
+
+
+@if (Employees != null && Employees.Any())
+{
+    <QuickGrid Items="Employees">
+        <PropertyColumn Property="e=>e.FirstName" Sortable="true" Title="First Name"></PropertyColumn>
+        <PropertyColumn Property="e=>e.LastName" Sortable="true" Title="Last Name"></PropertyColumn>
+        <PropertyColumn Property="e=>e.HireDate.ToLocalTime()" Sortable="true" Title="Hire Date" Format="dd.MM.yyyy"></PropertyColumn>
+        <PropertyColumn Property="e=>e.PhoneNumber" Sortable="true" Title="Phone Number"></PropertyColumn>
+        <PropertyColumn Property="e=>e.Salary" Sortable="true" Title="Salary"></PropertyColumn>
+        <PropertyColumn Property="e=>e.Department.Name" Sortable="true" Title="Department"></PropertyColumn>
+        <PropertyColumn Property="e=>e.Job.Title" Sortable="true" Title="Job"></PropertyColumn>
+        <PropertyColumn Property="e=>e.CreatedOn.ToLocalTime()" Sortable="true" Title="When Created" Format="dd.MM.yyyy"></PropertyColumn>
+        <TemplateColumn Title="When Updated">
+            @{
+                if (@context.ModifiedOn.HasValue)
+                {
+                    @context.ModifiedOn.Value.ToLocalTime().ToString("dd.MM.yyyy")
+                }
+            }
+        </TemplateColumn>
+        <TemplateColumn Title="Actions">
+            <Tooltip Title="Delete Employee">
+                <button type="button" class="btn btn-danger" @onclick="@(() => ConfirmDelete(context))"><i class="bi bi-window-dash"></i></button>
+            </Tooltip>
+        </TemplateColumn>
+    </QuickGrid>
+
+    <ConfirmComponent ConfirmationChanged="DeleteConfirmed" @ref="DeleteConfirmation"></ConfirmComponent>
+}
+
+@code
+{
+    [Parameter]
+    public IQueryable<EmployeeDto>? Employees { get; set; }
+
+    private EmployeeDto? _employeeToDelete;
+    private ConfirmComponent? DeleteConfirmation { get; set; }
+
+    private void DeleteConfirmed(bool confirmed)
+    {
+        if (confirmed)
+        {
+            Console.WriteLine($"ConfirmDelete {_employeeToDelete?.Email}");
+        }
+    }
+
+    private void ConfirmDelete(EmployeeDto employee)
+    {
+        _employeeToDelete = employee;
+        DeleteConfirmation?.Show("Confirm Employee Deletion", $"The Employe record for {_employeeToDelete.FirstName} {_employeeToDelete.LastName} will be deleted.");
+    }
+
+}

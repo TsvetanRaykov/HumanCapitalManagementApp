@@ -1,6 +1,29 @@
 ﻿@page "/ListEmployees"
-<h3>ListEmployees</h3>
+@using HCM.App.Components
+@using HCM.Shared.Data.DTO
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@inject IHttpClientFactory HttpClientFactory
+
+
+@if (_employees == null)
+{
+    <p>
+        <em>Loading...</em>
+    </p>
+}
+else
+{
+    <EmployeesListComponent Employees="_employees?.AsQueryable()"></EmployeesListComponent>
+}
 
 @code {
-    
+
+    private EmployeeDto[]? _employees;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _employees = await HttpClientFactory.CreateClient("Api").GetFromJsonAsync<EmployeeDto[]>("/api/v1/Employees");
+    }
+
 }
