@@ -1,6 +1,47 @@
 ﻿@page "/AddJob"
-<h3>AddJob</h3>
+@using Microsoft.AspNetCore.Authorization
+@using System.Text.Json
+
+@attribute [Authorize]
+<h3>Add Job</h3>
+
+<EditForm Model="_job" OnValidSubmit="@HandleValidSubmit" class="row g-3">
+    <DataAnnotationsValidator />
+    <div class="col-12">
+        <label for="jobTitle" class="form-label">Title</label>
+        <InputText @bind-Value="_job.Title" class="form-control" id="jobTitle"></InputText>
+    </div>
+    <div class="col-12">
+        <label for="jobDescription" class="form-label">Description (optional)</label>
+        <InputTextArea @bind-Value="_job.Description" class=" form-control" id="jobDescription"></InputTextArea>
+    </div>
+
+    <div class="col-md-6">
+        <label for="jobMinSalary" class="form-label">Min Salary</label>
+        <InputText @bind-Value="_job.MinSalaryString" class="form-control" id="jobMinSalary"></InputText>
+    </div>
+    <div class="col-md-6">
+        <label for="jobMaxSalary" class="form-label">Max Salary</label>
+        <InputText @bind-Value="_job.MaxSalaryString" class="form-control" id="jobMaxSalary"></InputText>
+    </div>
+
+    <div class="col-12">
+        <button type="submit" class="btn btn-primary">Create</button>
+    </div>
+    <ValidationSummary />
+</EditForm>
 
 @code {
-    
+    private readonly JobViewModel _job = new();
+
+    protected override void OnInitialized()
+    {
+
+    }
+
+    private void HandleValidSubmit()
+    {
+        Console.WriteLine(JsonSerializer.Serialize(_job));
+    }
+   
 }
