@@ -1,6 +1,9 @@
 ﻿@page "/AddJob"
 @using Microsoft.AspNetCore.Authorization
-@using System.Text.Json
+@using AutoMapper
+@using HCM.Shared.Data.DTO
+@inject IMapper Mapper
+@inject IHttpClientFactory HttpClientFactory
 
 @attribute [Authorize]
 <h3>Add Job</h3>
@@ -31,17 +34,28 @@
     <ValidationSummary />
 </EditForm>
 
+<p class="my-4">@_notify</p>
+
 @code {
     private readonly JobViewModel _job = new();
+    private string _notify;
 
-    protected override void OnInitialized()
+    private async void HandleValidSubmit()
     {
+        var jobDto = Mapper.Map<JobDto>(_job);
 
+        try
+        {
+            var response = await HttpClientFactory.CreateClient("Api").PostAsJsonAsync("/api/v1/Jobs", jobDto);
+            response.EnsureSuccessStatusCode();
+            _notify = $"Job {_job.Title} created.";
+        }
+        catch (HttpRequestException e)
+        {
+            _notify = e.Message;
+        }
+
+        await InvokeAsync(StateHasChanged);
     }
 
-    private void HandleValidSubmit()
-    {
-        Console.WriteLine(JsonSerializer.Serialize(_job));
-    }
-   
 }

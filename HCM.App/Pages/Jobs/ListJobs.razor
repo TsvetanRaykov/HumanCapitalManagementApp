@@ -1,6 +1,51 @@
 ﻿@page "/ListJobs"
-<h3>ListJobs</h3>
+@using Microsoft.AspNetCore.Authorization
+@using HCM.Shared.Data.DTO
+@attribute [Authorize]
+@inject IHttpClientFactory HttpClientFactory
 
-@code {
-    
+
+<h3>List Jobs</h3>
+
+@if (_jobs == null)
+{
+    <p>
+        <em>Loading...</em>
+    </p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Min Salary</th>
+                <th>Max Salary</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var jobDto in _jobs)
+            {
+                <tr>
+                    <td>@jobDto.Title</td>
+                    <td>@jobDto.Description</td>
+                    <td>@jobDto.MinSalary</td>
+                    <td>@jobDto.MaxSalary</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code
+{
+    private JobDto[]? _jobs;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _jobs = await HttpClientFactory.CreateClient("Api").GetFromJsonAsync<JobDto[]>("/api/v1/Jobs");
+    }
+
+
 }

@@ -1,3 +1,4 @@
+using System.Reflection;
 using HCM.App;
 using HCM.App.Handlers;
 using HCM.Shared;
@@ -28,5 +29,7 @@ builder.Services.AddOidcAuthentication(remoteAuthenticationOptions =>
 });
 
 builder.Services.AddScoped<ApiAuthorizationMessageHandler>();
+
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 await builder.Build().RunAsync();
