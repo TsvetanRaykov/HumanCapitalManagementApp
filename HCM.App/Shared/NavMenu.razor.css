@@ -60,3 +60,8 @@
         display: block;
     }
 }
+
+.hcm-nav-submenu {
+    background-color: inherit;
+    font-size: var(--bs-nav-link-font-size);
+}

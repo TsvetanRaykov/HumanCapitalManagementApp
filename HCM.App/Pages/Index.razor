@@ -1,13 +1,14 @@
 ﻿@page "/"
+@using Microsoft.AspNetCore.Authorization
+
+@attribute [Authorize]
+
 
 <PageTitle>Index</PageTitle>
 
-<h1>Hello, world!</h1>
+<h1>Human Capital Management App</h1>
 
-<div class="alert alert-warning" role="alert">
-    Before authentication will function correctly, you must configure your provider details in <code>Program.cs</code>
-</div>
 
-Welcome to your new app.
+Hello, <br/> Welcome to Immedis Full-Stack Developer Task Solution.<br/>
 
-<SurveyPrompt Title="How is Blazor working for you?"/>
+Developed by Tsvetan Raykov (<a href="mailto:tsvetan.raykov@gmail.com">tsvetan.raykov@gmail.com</a>).

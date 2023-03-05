@@ -24,6 +24,7 @@ builder.Services.AddOidcAuthentication(remoteAuthenticationOptions =>
     remoteAuthenticationOptions.ProviderOptions.DefaultScopes.Add(HcmConstants.SupportedCustomOidcScopes.HcmApiScope);
     remoteAuthenticationOptions.ProviderOptions.DefaultScopes.Add("email");
     remoteAuthenticationOptions.ProviderOptions.DefaultScopes.Add("roles");
+    remoteAuthenticationOptions.UserOptions.RoleClaim = "role";
 });
 
 builder.Services.AddScoped<ApiAuthorizationMessageHandler>();

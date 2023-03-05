@@ -1,5 +1,6 @@
 ﻿@page "/fetchdata"
 @using Microsoft.AspNetCore.Authorization
+@using HCM.Shared.Data.DTO
 @attribute [Authorize]
 @inject IHttpClientFactory HttpClientFactory
 
@@ -9,7 +10,7 @@
 
 <p>This component demonstrates fetching data from the server.</p>
 
-@if (_forecasts == null)
+@if (_jobs == null)
 {
     <p>
         <em>Loading...</em>
@@ -20,20 +21,20 @@ else
     <table class="table">
         <thead>
         <tr>
-            <th>Date</th>
-            <th>Temp. (C)</th>
-            <th>Temp. (F)</th>
-            <th>Summary</th>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Min Salary</th>
+            <th>Max Salary</th>
         </tr>
         </thead>
         <tbody>
-        @foreach (var forecast in _forecasts)
+        @foreach (var jobDto in _jobs)
         {
             <tr>
-                <td>@forecast.Date.ToShortDateString()</td>
-                <td>@forecast.TemperatureC</td>
-                <td>@forecast.TemperatureF</td>
-                <td>@forecast.Summary</td>
+                <td>@jobDto.Title</td>
+                <td>@jobDto.Description</td>
+                <td>@jobDto.MinSalary</td>
+                <td>@jobDto.MaxSalary</td>
             </tr>
         }
         </tbody>
@@ -42,21 +43,12 @@ else
 
 @code
 {
-    private WeatherForecast[]? _forecasts;
+    private JobDto[]? _jobs;
 
     protected override async Task OnInitializedAsync()
     {
-        _forecasts = await HttpClientFactory.CreateClient("Api").GetFromJsonAsync<WeatherForecast[]>("/WeatherForecast");
+        _jobs = await HttpClientFactory.CreateClient("Api").GetFromJsonAsync<JobDto[]>("/api/v1/Jobs");
     }
 
-    public class WeatherForecast
-    {
-        public DateTime Date { get; set; }
-
-        public int TemperatureC { get; set; }
-
-        public string? Summary { get; set; }
-
-        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-    }
+   
 }

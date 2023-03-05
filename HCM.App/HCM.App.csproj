@@ -34,5 +34,19 @@
 	  <ProjectReference Include="..\HCM.Shared\HCM.Shared.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Pages\Jobs\" />
+	  <Folder Include="Pages\Departments\" />
+	  <Folder Include="Pages\Employees\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <UpToDateCheckInput Remove="Pages\Users\ListUsers.razor" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <_ContentIncludedByDefault Remove="Pages\Users\ListUsers.razor" />
+	</ItemGroup>
+
 
 </Project>
