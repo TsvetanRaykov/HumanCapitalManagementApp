@@ -29,6 +29,21 @@ public class JobsController : BaseController
         return Ok(jobs);
     }
 
+    [HttpGet("{id:int}")]
+    public async Task<IActionResult> GetJobById(int id)
+    {
+        var jobsQuery = _jobRepository.AllAsNoTracking().Where(j => j.Id == id);
+
+        // evaluate
+        var jobs = await _mapper.ProjectTo<JobDto>(jobsQuery).ToArrayAsync();
+
+        var job = jobs.FirstOrDefault();
+
+        if (job == null) return NoContent();
+
+        return Ok(job);
+    }
+
     [HttpPost]
     public async Task<IActionResult> CreateJob([FromBody] JobDto job)
     {

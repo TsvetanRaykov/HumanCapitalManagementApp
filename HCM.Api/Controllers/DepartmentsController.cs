@@ -29,6 +29,21 @@ public class DepartmentsController : BaseController
         return Ok(departments);
     }
 
+
+    [HttpGet("{id:int}")]
+    public async Task<IActionResult> GetJobById(int id)
+    {
+        var departmentQuery = _departmentRepository.AllAsNoTracking().Where(j => j.Id == id);
+
+        var departments = await _mapper.ProjectTo<DepartmentDto>(departmentQuery).ToArrayAsync();
+
+        var department = departments.FirstOrDefault();
+
+        if (department == null) return NoContent();
+
+        return Ok(department);
+    }
+
     [HttpPost]
     public async Task<IActionResult> CreateDepartment([FromBody] DepartmentDto department)
     {

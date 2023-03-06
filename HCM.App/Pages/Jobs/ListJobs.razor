@@ -5,7 +5,9 @@
 @using HCM.App.Components
 @attribute [Authorize]
 @inject IHttpClientFactory HttpClientFactory
+@inject NavigationManager NavManager
 
+<PageTitle>List Jobs</PageTitle>
 
 <h3>List Jobs</h3>
 
@@ -19,6 +21,7 @@ else
 {
     <QuickGrid Items="_jobs.AsQueryable()">
         <PropertyColumn Property="j=>j.Title" Sortable="true" Title="Title"></PropertyColumn>
+        <PropertyColumn Property="j=>j.Description" Sortable="true" Title="Description"></PropertyColumn>
         <PropertyColumn Property="j=>j.MinSalary" Sortable="true" Title="Minimum Salary"></PropertyColumn>
         <PropertyColumn Property="j=>j.MaxSalary" Sortable="true" Title="Maximum Salary"></PropertyColumn>
         <PropertyColumn Property="j=>j.CreatedOn.ToLocalTime()" Sortable="true" Title="When Created" Format="dd.MM.yyyy"></PropertyColumn>
@@ -30,7 +33,10 @@ else
                 }
             }
         </TemplateColumn>
-        <TemplateColumn Title="Actions">
+        <TemplateColumn Title="Actions" Class="hcm-template-column">
+            <Tooltip Title="Edit Job">
+                <button type="button" class="btn btn-primary" @onclick="@(() => EditJobRedirect(context))"><i class="bi bi-pen-fill"></i></button>
+            </Tooltip>
             <Tooltip Title="Delete Job">
                 <button type="button" class="btn btn-danger" @onclick="@(() => ConfirmDelete(context))"><i class="bi bi-window-dash"></i></button>
             </Tooltip>
@@ -88,5 +94,10 @@ else
             employee.Job = context;
         }
         _jobEmployees = context.Employees.AsQueryable();
+    }
+
+    private void EditJobRedirect(JobDto job)
+    {
+        NavManager.NavigateTo($"/EditJob/{job.Id}");
     }
 }

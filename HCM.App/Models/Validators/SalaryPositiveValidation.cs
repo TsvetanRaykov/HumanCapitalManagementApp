@@ -1,11 +1,9 @@
-﻿namespace HCM.App.FormValidators;
+﻿using System.ComponentModel.DataAnnotations;
 
-using System.ComponentModel.DataAnnotations;
+namespace HCM.App.Models.Validators;
 
 public class SalaryPositiveValidation : ValidationAttribute
 {
-    private string ErrorMessage { get; set; }
-
     protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
     {
         var strSalary = value?.ToString();

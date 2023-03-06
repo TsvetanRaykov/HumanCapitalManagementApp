@@ -1,14 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace HCM.App.FormValidators;
+namespace HCM.App.Models.Validators;
 
 public class SalaryRangeValidation : ValidationAttribute
 {
     public int MinAmount { get; set; }
     public int MaxAmount { get; set; }
-
-    public string ErrorMessage { get; set; }
-
 
     protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
     {

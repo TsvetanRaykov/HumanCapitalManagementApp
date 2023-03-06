@@ -1,0 +1,67 @@
+﻿@page "/EditJob/{JobId:int}"
+@using HCM.App.Components
+@using Microsoft.AspNetCore.Authorization
+@using HCM.App.Models
+@using HCM.Shared.Data.DTO
+@using AutoMapper
+@attribute [Authorize]
+@inject IHttpClientFactory HttpClientFactory
+@inject IMapper Mapper
+
+<PageTitle>Edit Job</PageTitle>
+
+<JobEdit JobViewModel="_jobViewModel" OnModelUpdated="ConfirmUpdate"></JobEdit>
+
+<ConfirmComponent ConfirmationChanged="ConfirmationResult" @ref="_confirmationDialog"></ConfirmComponent>
+
+<p class="my-4">@_notify</p>
+
+@code {
+
+    [Parameter]
+    public int JobId { get; set; }
+
+    private JobViewModel? _jobViewModel;
+    private string? _notify;
+    private HttpClient? _httpClient;
+
+    private ConfirmComponent? _confirmationDialog;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _httpClient = HttpClientFactory.CreateClient("Api");
+        var job = await _httpClient.GetFromJsonAsync<JobDto>($"/api/v1/Jobs/{JobId}");
+        _jobViewModel = Mapper.Map<JobViewModel>(job);
+    }
+
+    private void ConfirmUpdate()
+    {
+        _confirmationDialog?.Show("Confirm Job Update", $"Job {_jobViewModel?.Title} will be updated");
+    }
+
+    private async void ConfirmationResult(bool confirmed)
+    {
+        _notify = confirmed ? await UpdateJobAsync() : string.Empty;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task<string?> UpdateJobAsync()
+    {
+        var jobDto = Mapper.Map<JobDto>(_jobViewModel);
+        try
+        {
+            if (_httpClient != null)
+            {
+                var response = await _httpClient.PutAsJsonAsync("/api/v1/Jobs", jobDto);
+                response.EnsureSuccessStatusCode();
+                return $"Job {jobDto.Title} updated.";
+            }
+        }
+        catch (HttpRequestException e)
+        {
+            return e.Message;
+        }
+        return null;
+    }
+
+}

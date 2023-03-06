@@ -48,6 +48,25 @@ public class EmployeesController : BaseController
         return Ok(result);
     }
 
+
+    [HttpGet("{id:int}")]
+    public async Task<IActionResult> GetJobById(int id)
+    {
+        var employeesQuery = _employeeRepository.AllAsNoTracking().Where(j => j.Id == id);
+
+        var employees = await _mapper.ProjectTo<EmployeeDto>(employeesQuery).ToArrayAsync();
+
+        var employee = employees.FirstOrDefault();
+
+        if (employee == null) return NoContent();
+
+        // filter nested collections
+        if (employee.Job != null) employee.Job.Employees = null;
+        if (employee.Department != null) employee.Department.Employees = null;
+
+        return Ok(employee);
+    }
+
     [HttpPost]
     public async Task<IActionResult> CreateEmployee([FromBody] EmployeeDto employee)
     {
@@ -57,14 +76,14 @@ public class EmployeesController : BaseController
 
         var department = await _departmentRepository.AllAsNoTracking()
             .FirstOrDefaultAsync(d => d.Id == employee.DepartmentId);
-        
+
         if (department == null)
             return UnprocessableEntity(string.Format(DepartmentNotExistsMessage, employee.DepartmentId));
 
         var job = await _jobRepository.AllAsNoTracking().FirstOrDefaultAsync(j => j.Id == employee.JobId);
         if (job == null)
             return NotFound(string.Format(JobNotFountMessage, employee.JobId));
-        
+
         var validateSalary = await ValidateSalary(employee);
         if (validateSalary.StatusCode != StatusCodes.Status200OK) return validateSalary;
 
@@ -114,8 +133,6 @@ public class EmployeesController : BaseController
 
         return Ok(_mapper.Map<EmployeeDto>(employeeToDelete));
     }
-
-
 
     private async Task<ObjectResult> ValidateSalary(EmployeeDto employee)
     {

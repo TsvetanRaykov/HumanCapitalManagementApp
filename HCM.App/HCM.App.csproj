@@ -38,8 +38,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Mappings\" />
-	  <Folder Include="Pages\Jobs\" />
 	  <Folder Include="Pages\Departments\" />
 	  <Folder Include="Pages\Employees\" />
 	</ItemGroup>

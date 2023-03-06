@@ -1,9 +1,8 @@
 ﻿using System.Globalization;
 using AutoMapper;
-using HCM.App.Pages.Jobs;
 using HCM.Shared.Data.DTO;
 
-namespace HCM.App.Mappings;
+namespace HCM.App.Models.Mapping;
 
 public class JobProfile : Profile
 {

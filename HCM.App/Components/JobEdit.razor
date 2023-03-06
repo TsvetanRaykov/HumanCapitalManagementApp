@@ -1,0 +1,71 @@
+﻿@using AutoMapper
+@using Microsoft.AspNetCore.Components
+@using HCM.App.Models
+@using HCM.Shared.Data.DTO
+
+@inject IMapper Mapper
+@inject IHttpClientFactory HttpClientFactory
+
+@if (JobViewModel == null)
+{
+    <p>
+        <em>Loading...</em>
+    </p>
+}
+else
+{
+    <h3>@_title</h3>
+
+    <EditForm Model="JobViewModel" OnValidSubmit="@HandleValidSubmit" class="row g-3">
+        <DataAnnotationsValidator />
+        <div class="col-12">
+            <label for="jobTitle" class="form-label">Title</label>
+            <InputText @bind-Value="JobViewModel.Title" class="form-control" id="jobTitle"></InputText>
+        </div>
+        <div class="col-12">
+            <label for="jobDescription" class="form-label">Description (optional)</label>
+            <InputTextArea @bind-Value="JobViewModel.Description" class=" form-control" id="jobDescription"></InputTextArea>
+        </div>
+
+        <div class="col-md-6">
+            <label for="jobMinSalary" class="form-label">Min Salary</label>
+            <InputText @bind-Value="JobViewModel.MinSalaryString" class="form-control" id="jobMinSalary"></InputText>
+        </div>
+        <div class="col-md-6">
+            <label for="jobMaxSalary" class="form-label">Max Salary</label>
+            <InputText @bind-Value="JobViewModel.MaxSalaryString" class="form-control" id="jobMaxSalary"></InputText>
+        </div>
+
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary">@_submitBtnCaption</button>
+        </div>
+        <ValidationSummary />
+    </EditForm>
+
+}
+@code {
+
+    [Parameter]
+    public JobViewModel? JobViewModel { get; set; }
+
+    [Parameter]
+    public EventCallback OnModelUpdated { get; set; }
+
+    private bool _isUpdate;
+    private string? _title;
+    private string? _submitBtnCaption;
+
+    protected override void OnParametersSet()
+    {
+        if (JobViewModel == null) return;
+        _isUpdate = JobViewModel?.Title != null;
+        _submitBtnCaption ??= _isUpdate ? "Update" : "Create";
+        _title ??= _isUpdate ? $"Edit Job {JobViewModel?.Title}" : "Add Job";
+    }
+
+    private async void HandleValidSubmit()
+    {
+        await OnModelUpdated.InvokeAsync();
+    }
+
+}

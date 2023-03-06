@@ -1,16 +1,18 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using HCM.App.FormValidators;
+using HCM.App.Models.Validators;
 
-namespace HCM.App.Pages.Jobs;
+namespace HCM.App.Models;
 
 public class JobViewModel
 {
+    public int Id { get; set; }
+
     [Required(ErrorMessage = "Job Title is required")]
     [StringLength(50, MinimumLength = 3, ErrorMessage = "Job Title must be at least 3 characters long.")]
     public string Title { get; set; }
-    
+
     public string? Description { get; set; }
-   
+
     [Required(ErrorMessage = "Minimum Salary is required.")]
     [SalaryDecimalValidation(ErrorMessage = "Invalid Minimum Salary format. Please use positive decimal number with two decimal places.")]
     [SalaryPositiveValidation(ErrorMessage = "Minimum Salary should not be less than 0.")]
