@@ -38,7 +38,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Pages\Departments\" />
 	  <Folder Include="Pages\Employees\" />
 	</ItemGroup>
 
@@ -47,7 +46,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <_ContentIncludedByDefault Remove="Pages\Departments\EditDepartment.razor" />
 	  <_ContentIncludedByDefault Remove="Pages\Users\ListUsers.razor" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <UpToDateCheckInput Remove="Pages\Departments\EditDepartment.razor" />
 	</ItemGroup>
 
 

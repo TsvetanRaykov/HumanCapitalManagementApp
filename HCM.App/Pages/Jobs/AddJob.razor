@@ -13,7 +13,7 @@
 
 <JobEdit JobViewModel="_job" OnModelUpdated="ConfirmUpdate"></JobEdit>
 
-<ConfirmComponent ConfirmationChanged="ConfirmationResult" @ref="_confirmationDialog"></ConfirmComponent>
+<ConfirmDialog ConfirmationChanged="ConfirmationResult" @ref="_confirmationDialog"></ConfirmDialog>
 
 <p class="my-4">@_notify</p>
 
@@ -23,7 +23,7 @@
 
     private string? _notify;
 
-    private ConfirmComponent? _confirmationDialog;
+    private ConfirmDialog? _confirmationDialog;
 
     private async Task<string?> CreateJobAsync()
     {

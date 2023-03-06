@@ -3,6 +3,7 @@
 @using Microsoft.AspNetCore.Components.QuickGrid
 @using HCM.Shared.Data.DTO
 @using HCM.App.Components
+@using System.Net
 @attribute [Authorize]
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager NavManager
@@ -50,30 +51,48 @@ else
     {
         <p class="p-5">
             <h5>@(_jobEmployees.First().Job?.Title) employees</h5>
-            <EmployeesListComponent Employees="_jobEmployees"></EmployeesListComponent>
+            <EmployeeList Employees="_jobEmployees"></EmployeeList>
         </p>
     }
 
-    <ConfirmComponent ConfirmationChanged="DeleteConfirmed" @ref="DeleteConfirmation"></ConfirmComponent>
+    <p class="my-4">@_notify</p>
+
+    <ConfirmDialog ConfirmationChanged="DeleteConfirmed" @ref="DeleteConfirmation"></ConfirmDialog>
 }
 
 @code
 {
-    private JobDto[]? _jobs;
+    private ICollection<JobDto>? _jobs;
     private JobDto? _jobDtoToDelete;
     private IQueryable<EmployeeDto>? _jobEmployees;
-
+    private HttpClient? _httpClient;
+    private string? _notify;
 
     protected override async Task OnInitializedAsync()
     {
-        _jobs = await HttpClientFactory.CreateClient("Api").GetFromJsonAsync<JobDto[]>("/api/v1/Jobs");
+        _httpClient = HttpClientFactory.CreateClient("Api");
+        _jobs = await _httpClient.GetFromJsonAsync<ICollection<JobDto>>("/api/v1/Jobs");
     }
 
-    private void DeleteConfirmed(bool confirmed)
+    private async Task DeleteConfirmed(bool confirmed)
     {
-        if (confirmed)
+        if (confirmed && _jobDtoToDelete != null)
         {
-            Console.WriteLine($"ConfirmDelete {_jobDtoToDelete?.Title}");
+            var response = await _httpClient!.DeleteAsync($"/api/v1/Jobs/{_jobDtoToDelete?.Id}");
+            try
+            {
+                response.EnsureSuccessStatusCode();
+                _jobs?.Remove(_jobDtoToDelete!);
+                _notify = $"Job {_jobDtoToDelete?.Title} has been deleted";
+            }
+            catch (HttpRequestException e)
+            {
+                if (e.StatusCode == HttpStatusCode.UnprocessableEntity)
+                    _notify = await response.Content.ReadAsStringAsync();
+                else
+                    _notify = e.Message;
+            }
+            await InvokeAsync(StateHasChanged);
         }
     }
 
@@ -83,7 +102,7 @@ else
         DeleteConfirmation?.Show("Confirm Job Deletion", $"The job {_jobDtoToDelete.Title} will be deleted.");
     }
 
-    private ConfirmComponent? DeleteConfirmation { get; set; }
+    private ConfirmDialog? DeleteConfirmation { get; set; }
 
     private void ShowEmployees(JobDto context)
     {

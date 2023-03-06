@@ -1,6 +1,123 @@
 ﻿@page "/ListDepartments"
-<h3>ListDepartments</h3>
+@using HCM.Shared.Data.DTO
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using HCM.App.Components
+@using Microsoft.AspNetCore.Authorization
+@using System.Net
+@attribute [Authorize]
 
-@code {
-    
+@inject IHttpClientFactory HttpClientFactory
+@inject NavigationManager NavManager
+
+<PageTitle>List Departments</PageTitle>
+
+<h3>List Departments</h3>
+
+@if (_departments == null)
+{
+    <p>
+        <em>Loading...</em>
+    </p>
+}
+else
+{
+    <QuickGrid Items="_departments.AsQueryable()">
+        <PropertyColumn Property="j=>j.Name" Sortable="true" Title="Name"></PropertyColumn>
+        <PropertyColumn Property="j=>j.Address" Sortable="true" Title="Address"></PropertyColumn>
+        <PropertyColumn Property="j=>j.Description" Sortable="true" Title="Description"></PropertyColumn>
+        <PropertyColumn Property="j=>j.CreatedOn.ToLocalTime()" Sortable="true" Title="When Created" Format="dd.MM.yyyy"></PropertyColumn>
+        <TemplateColumn Title="When Updated">
+            @{
+                if (@context.ModifiedOn.HasValue)
+                {
+                    @context.ModifiedOn.Value.ToLocalTime().ToString("dd.MM.yyyy")
+                }
+            }
+        </TemplateColumn>
+        <TemplateColumn Title="Actions" Class="hcm-template-column">
+            <Tooltip Title="Edit Department">
+                <button type="button" class="btn btn-primary" @onclick="@(() => EditDepartmentRedirect(context))"><i class="bi bi-pen-fill"></i></button>
+            </Tooltip>
+            <Tooltip Title="Delete Department">
+                <button type="button" class="btn btn-danger" @onclick="@(() => ConfirmDelete(context))"><i class="bi bi-window-dash"></i></button>
+            </Tooltip>
+            <Tooltip Title="Show Employees">
+                <button type="button" class="btn btn-info" @onclick="@(() => ShowEmployees(context))"><i class="bi bi-people"></i></button>
+            </Tooltip>
+        </TemplateColumn>
+    </QuickGrid>
+
+    if (_departmentEmployees != null && _departmentEmployees.Any())
+    {
+        <p class="p-5">
+            <h5>@(_departmentEmployees.First().Department?.Name) employees</h5>
+            <EmployeeList Employees="_departmentEmployees"></EmployeeList>
+        </p>
+    }
+
+    <p class="my-4">@_notify</p>
+
+    <ConfirmDialog ConfirmationChanged="DeleteConfirmed" @ref="DeleteConfirmation"></ConfirmDialog>
+}
+
+@code
+{
+    private HttpClient? _httpClient;
+    private ICollection<DepartmentDto>? _departments;
+    private DepartmentDto? _departmentToDelete;
+    private IQueryable<EmployeeDto>? _departmentEmployees;
+    private string? _notify;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        _httpClient = HttpClientFactory.CreateClient("Api");
+        _departments = await _httpClient.GetFromJsonAsync<ICollection<DepartmentDto>>("/api/v1/Departments");
+    }
+
+    private async Task DeleteConfirmed(bool confirmed)
+    {
+        if (confirmed && _departmentToDelete != null)
+        {
+            var response = await _httpClient!.DeleteAsync($"/api/v1/Departments/{_departmentToDelete?.Id}");
+            try
+            {
+                response.EnsureSuccessStatusCode();
+                _departments?.Remove(_departmentToDelete!);
+                _notify = $"Department {_departmentToDelete?.Name} has been deleted";
+            }
+            catch (HttpRequestException e)
+            {
+                if (e.StatusCode == HttpStatusCode.UnprocessableEntity)
+                    _notify = await response.Content.ReadAsStringAsync();
+                else
+                    _notify = e.Message;
+            }
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private void ConfirmDelete(DepartmentDto department)
+    {
+        _departmentToDelete = department;
+        DeleteConfirmation?.Show("Confirm Department Deletion", $"The department {_departmentToDelete.Name} will be deleted.");
+    }
+
+    private ConfirmDialog? DeleteConfirmation { get; set; }
+
+    private void ShowEmployees(DepartmentDto context)
+    {
+        if (context.Employees == null) return;
+
+        foreach (var employee in context.Employees)
+        {
+            employee.Department = context;
+        }
+        _departmentEmployees = context.Employees.AsQueryable();
+    }
+
+    private void EditDepartmentRedirect(DepartmentDto department)
+    {
+        NavManager.NavigateTo($"/EditDepartment/{department.Id}");
+    }
 }

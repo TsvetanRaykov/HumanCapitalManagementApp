@@ -28,7 +28,7 @@
         </TemplateColumn>
     </QuickGrid>
 
-    <ConfirmComponent ConfirmationChanged="DeleteConfirmed" @ref="DeleteConfirmation"></ConfirmComponent>
+    <ConfirmDialog ConfirmationChanged="DeleteConfirmed" @ref="DeleteConfirmation"></ConfirmDialog>
 }
 
 @code
@@ -37,7 +37,7 @@
     public IQueryable<EmployeeDto>? Employees { get; set; }
 
     private EmployeeDto? _employeeToDelete;
-    private ConfirmComponent? DeleteConfirmation { get; set; }
+    private ConfirmDialog? DeleteConfirmation { get; set; }
 
     private void DeleteConfirmed(bool confirmed)
     {

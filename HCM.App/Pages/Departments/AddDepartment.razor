@@ -1,6 +1,51 @@
 ﻿@page "/AddDepartment"
-<h3>AddDepartment</h3>
+@using Microsoft.AspNetCore.Authorization
+@using HCM.App.Models
+@using HCM.App.Components
+@using AutoMapper
+@using HCM.Shared.Data.DTO
+@attribute [Authorize]
+@inject IHttpClientFactory HttpClientFactory
+@inject IMapper Mapper
 
-@code {
-    
+<PageTitle>Add Department</PageTitle>
+
+<DepartmentEdit DepartmentViewModel="_department" OnModelUpdated="ConfirmUpdate"></DepartmentEdit>
+
+<ConfirmDialog ConfirmationChanged="ConfirmationResult" @ref="_confirmationDialog"></ConfirmDialog>
+
+<p class="my-4">@_notify</p>
+
+@code
+{
+    private readonly DepartmentViewModel _department = new();
+
+    private string? _notify;
+
+    private ConfirmDialog? _confirmationDialog;
+
+    private async Task<string?> CreateDepartmentAsync()
+    {
+        var departmentDto = Mapper.Map<DepartmentDto>(_department);
+        try
+        {
+            var response = await HttpClientFactory.CreateClient("Api").PostAsJsonAsync("/api/v1/Departments", departmentDto);
+            response.EnsureSuccessStatusCode();
+            return $"Department {departmentDto.Name} created.";
+        }
+        catch (HttpRequestException e)
+        {
+            return e.Message;
+        }
+    }
+    private void ConfirmUpdate()
+    {
+        _confirmationDialog?.Show("Confirm Department Creation", $"Department {_department?.Name} will be created");
+    }
+    private async void ConfirmationResult(bool confirmed)
+    {
+        _notify = confirmed ? await CreateDepartmentAsync() : string.Empty;
+        await InvokeAsync(StateHasChanged);
+    }
+
 }

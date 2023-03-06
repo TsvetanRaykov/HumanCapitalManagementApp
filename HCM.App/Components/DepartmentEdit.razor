@@ -1,0 +1,61 @@
+﻿@using Microsoft.AspNetCore.Components
+@using HCM.App.Models
+
+@if (DepartmentViewModel == null)
+{
+    <p>
+        <em>Loading...</em>
+    </p>
+}
+else
+{
+    <h3>@_title</h3>
+
+    <EditForm Model="DepartmentViewModel" OnValidSubmit="@HandleValidSubmit" class="row g-3">
+        <DataAnnotationsValidator />
+        <div class="col-12">
+            <label for="departmentName" class="form-label">Name</label>
+            <InputText @bind-Value="DepartmentViewModel.Name" class="form-control" id="departmentName"></InputText>
+        </div>
+        <div class="col-12">
+            <label for="departmentAddress" class="form-label">Address</label>
+            <InputText @bind-Value="DepartmentViewModel.Address" class="form-control" id="departmentAddress"></InputText>
+        </div>
+        <div class="col-12">
+            <label for="departmentDescription" class="form-label">Description (optional)</label>
+            <InputTextArea @bind-Value="DepartmentViewModel.Description" class=" form-control" id="departmentDescription"></InputTextArea>
+        </div>
+
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary">@_submitBtnCaption</button>
+        </div>
+        <ValidationSummary />
+    </EditForm>
+
+}
+@code {
+
+    [Parameter]
+    public DepartmentViewModel? DepartmentViewModel { get; set; }
+
+    [Parameter]
+    public EventCallback OnModelUpdated { get; set; }
+
+    private bool _isUpdate;
+    private string? _title;
+    private string? _submitBtnCaption;
+
+    protected override void OnParametersSet()
+    {
+        if (DepartmentViewModel == null) return;
+        _isUpdate = DepartmentViewModel?.Name != null;
+        _submitBtnCaption ??= _isUpdate ? "Update" : "Create";
+        _title ??= _isUpdate ? $"Edit Department {DepartmentViewModel?.Name}" : "Add Department";
+    }
+
+    private async void HandleValidSubmit()
+    {
+        await OnModelUpdated.InvokeAsync();
+    }
+
+}

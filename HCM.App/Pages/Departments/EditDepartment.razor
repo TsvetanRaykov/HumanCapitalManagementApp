@@ -1,4 +1,4 @@
-﻿@page "/EditJob/{JobId:int}"
+﻿@page "/EditDepartment/{DepartmentId:int}"
 @using HCM.App.Components
 @using Microsoft.AspNetCore.Authorization
 @using HCM.App.Models
@@ -8,9 +8,9 @@
 @inject IHttpClientFactory HttpClientFactory
 @inject IMapper Mapper
 
-<PageTitle>Edit Job</PageTitle>
+<PageTitle>Edit Department</PageTitle>
 
-<JobEdit JobViewModel="_jobViewModel" OnModelUpdated="ConfirmUpdate"></JobEdit>
+<DepartmentEdit DepartmentViewModel="_departmentViewModel" OnModelUpdated="ConfirmUpdate"></DepartmentEdit>
 
 <ConfirmDialog ConfirmationChanged="ConfirmationResult" @ref="_confirmationDialog"></ConfirmDialog>
 
@@ -19,9 +19,9 @@
 @code {
 
     [Parameter]
-    public int JobId { get; set; }
+    public int DepartmentId { get; set; }
 
-    private JobViewModel? _jobViewModel;
+    private DepartmentViewModel? _departmentViewModel;
     private string? _notify;
     private HttpClient? _httpClient;
 
@@ -30,31 +30,31 @@
     protected override async Task OnInitializedAsync()
     {
         _httpClient = HttpClientFactory.CreateClient("Api");
-        var job = await _httpClient.GetFromJsonAsync<JobDto>($"/api/v1/Jobs/{JobId}");
-        _jobViewModel = Mapper.Map<JobViewModel>(job);
+        var department = await _httpClient.GetFromJsonAsync<DepartmentDto>($"/api/v1/Departments/{DepartmentId}");
+        _departmentViewModel = Mapper.Map<DepartmentViewModel>(department);
     }
 
     private void ConfirmUpdate()
     {
-        _confirmationDialog?.Show("Confirm Job Update", $"Job {_jobViewModel?.Title} will be updated");
+        _confirmationDialog?.Show("Confirm Department Update", $"Department {_departmentViewModel?.Name} will be updated");
     }
 
     private async void ConfirmationResult(bool confirmed)
     {
-        _notify = confirmed ? await UpdateJobAsync() : string.Empty;
+        _notify = confirmed ? await UpdateDepartmentAsync() : string.Empty;
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task<string?> UpdateJobAsync()
+    private async Task<string?> UpdateDepartmentAsync()
     {
-        var jobDto = Mapper.Map<JobDto>(_jobViewModel);
+        var departmentDto = Mapper.Map<DepartmentDto>(_departmentViewModel);
         try
         {
             if (_httpClient != null)
             {
-                var response = await _httpClient.PutAsJsonAsync("/api/v1/Jobs", jobDto);
+                var response = await _httpClient.PutAsJsonAsync("/api/v1/Departments", departmentDto);
                 response.EnsureSuccessStatusCode();
-                return $"Job {jobDto.Title} updated.";
+                return $"Department {departmentDto.Name} updated.";
             }
         }
         catch (HttpRequestException e)
