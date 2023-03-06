@@ -1,5 +1,4 @@
 ﻿@page "/ListDepartments"
-@using Microsoft.AspNetCore.Components.QuickGrid
 @using Microsoft.AspNetCore.Authorization
 @using System.Net
 @attribute [Authorize]
@@ -13,9 +12,7 @@
 
 @if (_departments == null)
 {
-    <div class="spinner-border" role="status">
-        <span class="visually-hidden">Loading...</span>
-    </div>
+    <SpinnerComponent/>
 }
 else
 {
