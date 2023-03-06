@@ -1,6 +1,7 @@
 ﻿@using Microsoft.AspNetCore.Components.QuickGrid
 @using HCM.Shared.Data.DTO
-
+@using HCM.App.Models
+@inject NavigationManager NavManager
 
 @if (Employees != null && Employees.Any())
 {
@@ -22,8 +23,11 @@
             }
         </TemplateColumn>
         <TemplateColumn Title="Actions">
+            <Tooltip Title="Edit Employee">
+                <button type="button" class="btn btn-primary" @onclick="@(() => EditEmployeeRedirect(context))"><i class="bi bi-person-gear"></i></button>
+            </Tooltip>
             <Tooltip Title="Delete Employee">
-                <button type="button" class="btn btn-danger" @onclick="@(() => ConfirmDelete(context))"><i class="bi bi-window-dash"></i></button>
+                <button type="button" class="btn btn-danger" @onclick="@(() => ConfirmDelete(context))"><i class="bi bi-person-x"></i></button>
             </Tooltip>
         </TemplateColumn>
     </QuickGrid>
@@ -53,4 +57,8 @@
         DeleteConfirmation?.Show("Confirm Employee Deletion", $"The Employe record for {_employeeToDelete.FirstName} {_employeeToDelete.LastName} will be deleted.");
     }
 
+    private void EditEmployeeRedirect(EmployeeDto context)
+    {
+        NavManager.NavigateTo($"/EditEmployee/{context.Id}");
+    }
 }

@@ -1,8 +1,5 @@
 ﻿@page "/EditJob/{JobId:int}"
-@using HCM.App.Components
 @using Microsoft.AspNetCore.Authorization
-@using HCM.App.Models
-@using HCM.Shared.Data.DTO
 @using AutoMapper
 @attribute [Authorize]
 @inject IHttpClientFactory HttpClientFactory
@@ -14,7 +11,7 @@
 
 <ConfirmDialog ConfirmationChanged="ConfirmationResult" @ref="_confirmationDialog"></ConfirmDialog>
 
-<p class="my-4">@_notify</p>
+<ToastComponent @ref="_toast" Delay="5000"></ToastComponent>
 
 @code {
 
@@ -22,7 +19,7 @@
     public int JobId { get; set; }
 
     private JobViewModel? _jobViewModel;
-    private string? _notify;
+    private ToastComponent? _toast;
     private HttpClient? _httpClient;
 
     private ConfirmDialog? _confirmationDialog;
@@ -41,8 +38,8 @@
 
     private async void ConfirmationResult(bool confirmed)
     {
-        _notify = confirmed ? await UpdateJobAsync() : string.Empty;
-        await InvokeAsync(StateHasChanged);
+        var notify = confirmed ? await UpdateJobAsync() : string.Empty;
+        _toast?.ShowToast(new ToastMessage(notify));
     }
 
     private async Task<string?> UpdateJobAsync()

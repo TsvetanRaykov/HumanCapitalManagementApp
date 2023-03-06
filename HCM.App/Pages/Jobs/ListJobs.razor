@@ -1,8 +1,5 @@
 ﻿@page "/ListJobs"
 @using Microsoft.AspNetCore.Authorization
-@using Microsoft.AspNetCore.Components.QuickGrid
-@using HCM.Shared.Data.DTO
-@using HCM.App.Components
 @using System.Net
 @attribute [Authorize]
 @inject IHttpClientFactory HttpClientFactory
@@ -14,9 +11,9 @@
 
 @if (_jobs == null)
 {
-    <p>
-        <em>Loading...</em>
-    </p>
+    <div class="spinner-border" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
 }
 else
 {
@@ -55,7 +52,7 @@ else
         </p>
     }
 
-    <p class="my-4">@_notify</p>
+    <ToastComponent @ref="_toast" Delay="5000"></ToastComponent>
 
     <ConfirmDialog ConfirmationChanged="DeleteConfirmed" @ref="DeleteConfirmation"></ConfirmDialog>
 }
@@ -66,7 +63,7 @@ else
     private JobDto? _jobDtoToDelete;
     private IQueryable<EmployeeDto>? _jobEmployees;
     private HttpClient? _httpClient;
-    private string? _notify;
+    private ToastComponent? _toast;
 
     protected override async Task OnInitializedAsync()
     {
@@ -83,16 +80,19 @@ else
             {
                 response.EnsureSuccessStatusCode();
                 _jobs?.Remove(_jobDtoToDelete!);
-                _notify = $"Job {_jobDtoToDelete?.Title} has been deleted";
+                var notify = $"Job {_jobDtoToDelete?.Title} has been deleted";
+                _toast?.ShowToast(new ToastMessage(notify));
             }
             catch (HttpRequestException e)
             {
                 if (e.StatusCode == HttpStatusCode.UnprocessableEntity)
-                    _notify = await response.Content.ReadAsStringAsync();
+                {
+                    var notify = await response.Content.ReadAsStringAsync();
+                    _toast?.ShowToast(new ToastMessage(notify));
+                }
                 else
-                    _notify = e.Message;
+                    _toast?.ShowToast(new ToastMessage(e.Message));
             }
-            await InvokeAsync(StateHasChanged);
         }
     }
 
@@ -119,4 +119,5 @@ else
     {
         NavManager.NavigateTo($"/EditJob/{job.Id}");
     }
+
 }

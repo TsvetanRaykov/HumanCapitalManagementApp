@@ -1,0 +1,70 @@
+﻿@page "/EditEmployee/{EmployeeId:int}"
+@using Microsoft.AspNetCore.Authorization
+@using AutoMapper
+@using System.Net
+@attribute [Authorize]
+@inject IHttpClientFactory HttpClientFactory
+@inject IMapper Mapper
+
+<PageTitle>Edit Employee</PageTitle>
+
+<EmployeeEdit OnModelUpdated="ConfirmUpdate" EmployeeViewModel="_employeeViewModel"></EmployeeEdit>
+
+<ConfirmDialog ConfirmationChanged="ConfirmationResult" @ref="_confirmationDialog"></ConfirmDialog>
+
+<ToastComponent @ref="_toast" Delay="5000"></ToastComponent>
+
+@code {
+
+    [Parameter]
+    public int EmployeeId { get; set; }
+
+    private EmployeeViewModel? _employeeViewModel;
+    private HttpClient? _httpClient;
+
+    private ConfirmDialog? _confirmationDialog;
+
+    private ToastComponent? _toast;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _httpClient = HttpClientFactory.CreateClient("Api");
+        var employeeDto = await _httpClient.GetFromJsonAsync<EmployeeDto>($"/api/v1/Employees/{EmployeeId}");
+        _employeeViewModel = Mapper.Map<EmployeeViewModel>(employeeDto);
+    }
+
+    private void ConfirmUpdate()
+    {
+        _confirmationDialog?.Show("Confirm Employee Update", $"Employee {_employeeViewModel?.FirstName} {_employeeViewModel?.LastName} will be updated");
+    }
+
+    private async void ConfirmationResult(bool confirmed)
+    {
+        var notify = confirmed ? await UpdateEmployeeAsync() : string.Empty;
+        _toast?.ShowToast(new ToastMessage(notify));
+    }
+
+    private async Task<string?> UpdateEmployeeAsync()
+    {
+        var employeeDto = Mapper.Map<EmployeeDto>(_employeeViewModel);
+        var response = await _httpClient!.PutAsJsonAsync("/api/v1/Employees", employeeDto);
+        try
+        {
+            if (_httpClient != null)
+            {
+                response.EnsureSuccessStatusCode();
+                return $"Employee {employeeDto.FirstName} {employeeDto.LastName} updated.";
+            }
+        }
+        catch (HttpRequestException e)
+        {
+            if (e.StatusCode == HttpStatusCode.UnprocessableEntity)
+                return await response.Content.ReadAsStringAsync();
+
+            return e.Message;
+        }
+        return null;
+
+    }
+
+}

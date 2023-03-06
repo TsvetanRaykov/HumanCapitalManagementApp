@@ -1,0 +1,133 @@
+﻿@using Microsoft.AspNetCore.Components
+@using HCM.App.Models
+@using HCM.Shared.Data.DTO
+@using System.ComponentModel.Design
+
+@inject IHttpClientFactory HttpClientFactory
+
+@if (EmployeeViewModel == null)
+{
+    <div class="spinner-border" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+}
+else
+{
+    <h3>@_title</h3>
+
+    <EditForm Model="EmployeeViewModel" OnValidSubmit="@HandleValidSubmit" class="row g-3">
+        <DataAnnotationsValidator />
+        <div class="col-md-6">
+            <label for="employeeFirstName" class="form-label">First Name</label>
+            <InputText @bind-Value="EmployeeViewModel.FirstName" class="form-control" id="employeeFirstName"></InputText>
+        </div>
+        <div class="col-md-6">
+            <label for="employeeLastName" class="form-label">Last Name</label>
+            <InputText @bind-Value="EmployeeViewModel.LastName" class="form-control" id="employeeLastName"></InputText>
+        </div>
+
+        <div class="col-12">
+            <label for="employeeEmail" class="form-label">Email</label>
+            <InputText @bind-Value="EmployeeViewModel.Email" class="form-control" id="employeeEmail"></InputText>
+        </div>
+        <div class="col-12">
+            <label for="employeePhone" class="form-label">Phone</label>
+            <InputText @bind-Value="EmployeeViewModel.PhoneNumber" class="form-control" id="employeePhone"></InputText>
+        </div>
+        <div class="col-12">
+            <label for="employeeHireDate" class="form-label">Hire Date</label>
+            <InputDate @bind-Value="EmployeeViewModel.HireDate" @bind-Value:format="dd.MM.yyyy" class="form-control" id="employeeHireDate"></InputDate>
+        </div>
+        <div class="col-12">
+            <label for="employeeSalary" class="form-label">Salary</label>
+            <InputText @bind-Value="EmployeeViewModel.Salary" class="form-control" id="employeeSalary"></InputText>
+        </div>
+
+        <div class="col-md-6">
+            <label for="employeeDepartment" class="form-label">Department</label>
+            <InputSelect id="employeeDepartment" @bind-Value="EmployeeViewModel.DepartmentId" class="form-control">
+                @if (_allDepartments != null)
+                {
+                    if (EmployeeViewModel.DepartmentId == 0)
+                        EmployeeViewModel.DepartmentId = _allDepartments.First().Id;
+                    foreach (var departmentDto in _allDepartments)
+                    {
+                        if (departmentDto.Id == EmployeeViewModel.DepartmentId)
+                        {
+                            <option value="@departmentDto.Id" selected="selected">@departmentDto.Name</option>
+                        }
+                        else
+                        {
+                            <option value="@departmentDto.Id">@departmentDto.Name</option>
+                        }
+
+                    }
+                }
+            </InputSelect>
+        </div>
+        <div class="col-md-6">
+            <label for="employeeJob" class="form-label">Job</label>
+
+            <select id="employeeJob" @bind="EmployeeViewModel.JobId" class="form-control">
+                @if (_allJobs != null)
+                {
+                    if (EmployeeViewModel.JobId == 0)
+                        EmployeeViewModel.JobId = _allJobs.First().Id;
+                    foreach (var jobDto in _allJobs)
+                    {
+                        if (jobDto.Id == EmployeeViewModel.JobId)
+                        {
+                            <option value="@jobDto.Id" selected="selected">@jobDto.Title</option>
+                        }
+                        else
+                        {
+                            <option value="@jobDto.Id">@jobDto.Title</option>
+                        }
+                    }
+                }
+            </select>
+        </div>
+
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary">@_submitBtnCaption</button>
+        </div>
+        <ValidationSummary />
+    </EditForm>
+
+}
+@code {
+
+    [Parameter]
+    public EmployeeViewModel? EmployeeViewModel { get; set; }
+
+    [Parameter]
+    public EventCallback OnModelUpdated { get; set; }
+
+    private bool _isUpdate;
+    private string? _title;
+    private string? _submitBtnCaption;
+    private HttpClient? _httpClient;
+    private DepartmentDto[]? _allDepartments;
+    private JobDto[]? _allJobs;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _httpClient = HttpClientFactory.CreateClient("Api");
+        _allDepartments = await _httpClient.GetFromJsonAsync<DepartmentDto[]>("/api/v1/Departments");
+        _allJobs = await _httpClient.GetFromJsonAsync<JobDto[]>("/api/v1/Jobs");
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (EmployeeViewModel == null) return;
+        _isUpdate = EmployeeViewModel?.Email != null;
+        _submitBtnCaption ??= _isUpdate ? "Update" : "Create";
+        _title ??= _isUpdate ? $"Edit Employee {EmployeeViewModel?.FirstName} {EmployeeViewModel?.LastName}" : "Add Employee";
+    }
+
+    private async void HandleValidSubmit()
+    {
+        await OnModelUpdated.InvokeAsync();
+    }
+
+}

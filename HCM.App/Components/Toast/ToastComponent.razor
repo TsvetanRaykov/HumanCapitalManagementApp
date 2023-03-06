@@ -1,0 +1,31 @@
+﻿@inject IJSRuntime JsRuntime
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="liveToast" @ref="_toastRef" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="@Delay">
+        <div class="toast-header">
+            <strong class="me-auto">@_toastMessage?.Title</strong>
+            <small>@_toastMessage?.Timestamp.ToString("T")</small>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+            @_toastMessage?.Message
+        </div>
+    </div>
+</div>
+
+@code
+{
+    private ToastMessage? _toastMessage;
+
+    [Parameter]
+    public int Delay { get; set; } = 6000;
+
+    ElementReference _toastRef;
+
+    public async void ShowToast(ToastMessage message)
+    {
+        _toastMessage = message;
+        await InvokeAsync(StateHasChanged);
+        await JsRuntime.InvokeVoidAsync("ShowToast", _toastRef);
+    }
+}
