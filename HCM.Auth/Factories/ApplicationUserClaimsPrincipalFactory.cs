@@ -1,5 +1,5 @@
 ﻿using System.Security.Claims;
-using HCM.Auth.Models;
+using HCM.Auth.Data.Models;
 using IdentityModel;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;

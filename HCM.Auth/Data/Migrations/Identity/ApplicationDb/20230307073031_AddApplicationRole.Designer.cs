@@ -3,6 +3,7 @@ using System;
 using HCM.Auth.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace HCM.Auth.Data.Migrations.Identity.ApplicationDb
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230307073031_AddApplicationRole")]
+    partial class AddApplicationRole
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -118,21 +120,6 @@ namespace HCM.Auth.Data.Migrations.Identity.ApplicationDb
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("HCM.Auth.Data.Models.ApplicationUserRole<string>", b =>
-                {
-                    b.Property<string>("UserId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("RoleId")
-                        .HasColumnType("text");
-
-                    b.HasKey("UserId", "RoleId");
-
-                    b.HasIndex("RoleId");
-
-                    b.ToTable("AspNetUserRoles", (string)null);
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.Property<int>("Id")
@@ -205,6 +192,27 @@ namespace HCM.Auth.Data.Migrations.Identity.ApplicationDb
                     b.ToTable("AspNetUserLogins", (string)null);
                 });
 
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("RoleId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("UserId", "RoleId");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("AspNetUserRoles", (string)null);
+
+                    b.HasDiscriminator<string>("Discriminator").HasValue("IdentityUserRole<string>");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
                     b.Property<string>("UserId")
@@ -226,21 +234,21 @@ namespace HCM.Auth.Data.Migrations.Identity.ApplicationDb
 
             modelBuilder.Entity("HCM.Auth.Data.Models.ApplicationUserRole<string>", b =>
                 {
-                    b.HasOne("HCM.Auth.Data.Models.ApplicationRole", "Role")
-                        .WithMany("Users")
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                    b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityUserRole<string>");
 
-                    b.HasOne("HCM.Auth.Data.Models.ApplicationUser", "User")
-                        .WithMany("Roles")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                    b.Property<string>("RoleId1")
+                        .IsRequired()
+                        .HasColumnType("text");
 
-                    b.Navigation("Role");
+                    b.Property<string>("UserId1")
+                        .IsRequired()
+                        .HasColumnType("text");
 
-                    b.Navigation("User");
+                    b.HasIndex("RoleId1");
+
+                    b.HasIndex("UserId1");
+
+                    b.HasDiscriminator().HasValue("ApplicationUserRole<string>");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -270,6 +278,21 @@ namespace HCM.Auth.Data.Migrations.Identity.ApplicationDb
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
+                {
+                    b.HasOne("HCM.Auth.Data.Models.ApplicationRole", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("HCM.Auth.Data.Models.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
                     b.HasOne("HCM.Auth.Data.Models.ApplicationUser", null)
@@ -277,6 +300,25 @@ namespace HCM.Auth.Data.Migrations.Identity.ApplicationDb
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("HCM.Auth.Data.Models.ApplicationUserRole<string>", b =>
+                {
+                    b.HasOne("HCM.Auth.Data.Models.ApplicationRole", "Role")
+                        .WithMany("Users")
+                        .HasForeignKey("RoleId1")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HCM.Auth.Data.Models.ApplicationUser", "User")
+                        .WithMany("Roles")
+                        .HasForeignKey("UserId1")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Role");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("HCM.Auth.Data.Models.ApplicationRole", b =>
