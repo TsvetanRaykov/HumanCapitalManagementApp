@@ -3,9 +3,9 @@ using HCM.Shared.Data.DTO;
 
 namespace HCM.App.Models.Mapping;
 
-public class EmployeeProfile : Profile
+public class EmployeeMappingProfile : Profile
 {
-    public EmployeeProfile()
+    public EmployeeMappingProfile()
     {
         CreateMap<EmployeeDto, EmployeeViewModel>()
             .ForMember(dest => dest.HireDate, opt => opt.MapFrom(src => src.HireDate.ToLocalTime()));

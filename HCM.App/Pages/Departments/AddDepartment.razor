@@ -1,6 +1,7 @@
 ﻿@page "/AddDepartment"
 @using Microsoft.AspNetCore.Authorization
 @using AutoMapper
+@using HCM.Shared
 @attribute [Authorize]
 @inject IHttpClientFactory HttpClientFactory
 @inject IMapper Mapper
@@ -26,7 +27,7 @@
         var departmentDto = Mapper.Map<DepartmentDto>(_department);
         try
         {
-            var response = await HttpClientFactory.CreateClient("Api").PostAsJsonAsync("/api/v1/Departments", departmentDto);
+            var response = await HttpClientFactory.CreateClient("Api").PostAsJsonAsync(HcmConstants.ApiEndpoints.Departments, departmentDto);
             response.EnsureSuccessStatusCode();
             return $"Department {departmentDto.Name} created.";
         }
@@ -41,7 +42,8 @@
     }
     private async void ConfirmationResult(bool confirmed)
     {
-        var notify = confirmed ? await CreateDepartmentAsync() : string.Empty;
+        if (!confirmed) return;
+        var notify = await CreateDepartmentAsync();
         _toast?.ShowToast(new ToastMessage(notify));
     }
 

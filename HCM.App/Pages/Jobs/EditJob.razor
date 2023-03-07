@@ -1,6 +1,7 @@
 ﻿@page "/EditJob/{JobId:int}"
 @using Microsoft.AspNetCore.Authorization
 @using AutoMapper
+@using HCM.Shared
 @attribute [Authorize]
 @inject IHttpClientFactory HttpClientFactory
 @inject IMapper Mapper
@@ -27,7 +28,7 @@
     protected override async Task OnInitializedAsync()
     {
         _httpClient = HttpClientFactory.CreateClient("Api");
-        var job = await _httpClient.GetFromJsonAsync<JobDto>($"/api/v1/Jobs/{JobId}");
+        var job = await _httpClient.GetFromJsonAsync<JobDto>($"{HcmConstants.ApiEndpoints.Jobs}/{JobId}");
         _jobViewModel = Mapper.Map<JobViewModel>(job);
     }
 
@@ -38,7 +39,8 @@
 
     private async void ConfirmationResult(bool confirmed)
     {
-        var notify = confirmed ? await UpdateJobAsync() : string.Empty;
+        if (!confirmed) return;
+        var notify = await UpdateJobAsync();
         _toast?.ShowToast(new ToastMessage(notify));
     }
 
@@ -49,7 +51,7 @@
         {
             if (_httpClient != null)
             {
-                var response = await _httpClient.PutAsJsonAsync("/api/v1/Jobs", jobDto);
+                var response = await _httpClient.PutAsJsonAsync(HcmConstants.ApiEndpoints.Jobs, jobDto);
                 response.EnsureSuccessStatusCode();
                 return $"Job {jobDto.Title} updated.";
             }

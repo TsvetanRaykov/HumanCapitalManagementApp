@@ -1,0 +1,71 @@
+﻿@page "/EditUser/{UserId:guid}"
+@using Microsoft.AspNetCore.Authorization
+@using AutoMapper
+@using HCM.Shared
+@using System.Net
+@attribute [Authorize(Roles = "admin")]
+@inject IHttpClientFactory HttpClientFactory
+@inject IMapper Mapper
+
+<PageTitle>Edit User</PageTitle>
+
+<UserEdit UserViewModel="_userViewModel" OnModelUpdated="ConfirmUpdate" OnPasswordSet="HandlePasswordSet" IsUpdateMode="true"></UserEdit>
+
+<ConfirmDialog ConfirmationChanged="ConfirmationResult" @ref="_confirmationDialog"></ConfirmDialog>
+
+<ToastComponent @ref="_toast" Delay="5000"></ToastComponent>
+
+@code {
+
+    [Parameter]
+    public Guid UserId { get; set; }
+
+    private UserViewModel? _userViewModel;
+    private ToastComponent? _toast;
+    private ConfirmDialog? _confirmationDialog;
+    private HttpClient? _httpClient;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _httpClient = HttpClientFactory.CreateClient("Ums");
+        _userViewModel = await _httpClient.GetFromJsonAsync<UserViewModel>($"{HcmConstants.ApiEndpoints.Users}/{UserId}");
+    }
+
+    private void ConfirmUpdate()
+    {
+        _confirmationDialog?.Show("Confirm User Update", $"{_userViewModel?.UserName} will be updated.");
+    }
+
+    private async void ConfirmationResult(bool confirmed)
+    {
+        if (!confirmed) return;
+        var notify = await UpdateUserAsync();
+        _toast?.ShowToast(new ToastMessage(notify));
+    }
+
+    private async Task<string?> UpdateUserAsync()
+    {
+        var userDto = Mapper.Map<UserDto>(_userViewModel);
+        var response = await HttpClientFactory.CreateClient("Ums")
+            .PutAsJsonAsync(HcmConstants.ApiEndpoints.Users, userDto);
+        try
+        {
+            response.EnsureSuccessStatusCode();
+            return $"{_userViewModel?.DisplayRole} {userDto.UserName} has been updated.";
+        }
+        catch (HttpRequestException e)
+        {
+            if (e.StatusCode is HttpStatusCode.UnprocessableEntity or HttpStatusCode.BadRequest)
+                return await response.Content.ReadAsStringAsync();
+
+            return e.Message;
+        }
+
+    }
+
+    private void HandlePasswordSet(UserDto user)
+    {
+        _toast?.ShowToast(new ToastMessage($"The Password for user {user.UserName} has been updated."));
+    }
+
+}

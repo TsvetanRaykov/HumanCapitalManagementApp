@@ -1,8 +1,59 @@
 ﻿@page "/AddUser"
 @using Microsoft.AspNetCore.Authorization
+@using AutoMapper
+@using System.Net
+@using HCM.Shared
 @attribute [Authorize(Roles = "admin")]
-<h3>AddUser</h3>
+@inject IHttpClientFactory HttpClientFactory
+@inject IMapper Mapper
+
+<PageTitle>Add User</PageTitle>
+
+<UserEdit OnModelUpdated="ConfirmUpdate" UserViewModel="_userViewModel" IsUpdateMode="false"></UserEdit>
+
+<ConfirmDialog ConfirmationChanged="ConfirmationResult" @ref="_confirmationDialog"></ConfirmDialog>
+
+<ToastComponent @ref="_toast" Delay="5000"></ToastComponent>
 
 @code {
-    
+
+    private readonly UserViewModel _userViewModel = new UserViewModel
+    {
+        Passwords = new PasswordViewModel()
+    };
+    private ToastComponent? _toast;
+    private ConfirmDialog? _confirmationDialog;
+
+    private void ConfirmUpdate()
+    {
+        _confirmationDialog?.Show("Confirm User Creation", $"{_userViewModel.DisplayRole} {_userViewModel.UserName} will be added to the system");
+    }
+
+    private async void ConfirmationResult(bool confirmed)
+    {
+        if (!confirmed) return;
+        var notify = await CreateUserAsync();
+        _toast?.ShowToast(new ToastMessage(notify));
+    }
+
+    private async Task<string?> CreateUserAsync()
+    {
+        var userDto = Mapper.Map<UserWithPasswordDto>(_userViewModel);
+        var response = await HttpClientFactory.CreateClient("Ums")
+            .PostAsJsonAsync(HcmConstants.ApiEndpoints.Users, userDto);
+        try
+        {
+            response.EnsureSuccessStatusCode();
+            return $"{_userViewModel.DisplayRole} {userDto.UserName} has been added to the system.";
+        }
+        catch (HttpRequestException e)
+        {
+            if (e.StatusCode is HttpStatusCode.UnprocessableEntity or HttpStatusCode.BadRequest)
+                return await response.Content.ReadAsStringAsync();
+
+            return e.Message;
+        }
+
+    }
+
 }

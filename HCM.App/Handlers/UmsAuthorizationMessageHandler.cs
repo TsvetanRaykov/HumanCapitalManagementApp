@@ -9,6 +9,6 @@ public class UmsAuthorizationMessageHandler : AuthorizationMessageHandler
     public UmsAuthorizationMessageHandler(IAccessTokenProvider provider, NavigationManager navigation) : base(provider,
         navigation)
     {
-        ConfigureHandler(new List<string> { "https://api:7000" }, new List<string> { HcmConstants.SupportedCustomOidcScopes.HcmUmsScope });
+        ConfigureHandler(new List<string> { "https://identityserver:7000" }, new List<string> { HcmConstants.SupportedCustomOidcScopes.HcmUmsScope });
     }
 }

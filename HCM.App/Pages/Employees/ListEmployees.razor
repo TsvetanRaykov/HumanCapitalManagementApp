@@ -1,5 +1,6 @@
 ﻿@page "/ListEmployees"
 @using Microsoft.AspNetCore.Authorization
+@using HCM.Shared
 @attribute [Authorize]
 @inject IHttpClientFactory HttpClientFactory
 
@@ -19,7 +20,8 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        _employees = await HttpClientFactory.CreateClient("Api").GetFromJsonAsync<EmployeeDto[]>("/api/v1/Employees");
+        _employees = await HttpClientFactory.CreateClient("Api")
+            .GetFromJsonAsync<EmployeeDto[]>(HcmConstants.ApiEndpoints.Employees);
     }
 
 }

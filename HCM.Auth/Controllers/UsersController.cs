@@ -1,5 +1,8 @@
-﻿using HCM.Auth.Services;
+﻿using HCM.Auth.Data.Models;
+using HCM.Auth.Services;
 using HCM.Shared.Data.DTO;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace HCM.Auth.Controllers
 {
@@ -13,10 +16,12 @@ namespace HCM.Auth.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly RoleManager<ApplicationRole> _roleManager;
 
-        public UsersController(IUserService userService)
+        public UsersController(IUserService userService, RoleManager<ApplicationRole> roleManager)
         {
             _userService = userService;
+            _roleManager = roleManager;
         }
 
         [HttpGet]
@@ -34,12 +39,22 @@ namespace HCM.Auth.Controllers
             return Ok(user);
         }
 
+        [HttpGet("roles")]
+        public async Task<IActionResult> GetAllRoles()
+        {
+            var roles = await _roleManager.Roles
+                .Select(r => r.Name)
+                .ToArrayAsync();
+
+            return Ok(roles);
+        }
+
         [HttpPost]
         public async Task<IActionResult> CreateUser([FromBody] UserWithPasswordDto user)
         {
             try
             {
-                var createResult = await _userService.CreateUserAsync(user);
+                var createResult = await _userService.CreateUserAsync(user, user.Password);
                 return Ok(createResult);
             }
             catch (Exception e)
@@ -50,7 +65,7 @@ namespace HCM.Auth.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> UpdateUser([FromBody] UserWithPasswordDto user)
+        public async Task<IActionResult> UpdateUser([FromBody] UserDto user)
         {
             try
             {
@@ -61,7 +76,20 @@ namespace HCM.Auth.Controllers
             {
                 return BadRequest(e.Message);
             }
+        }
 
+        [HttpPut("password")]
+        public async Task<IActionResult> SetUserPassword(PasswordDto passwordDto)
+        {
+            try
+            {
+                var userDto = await _userService.SetPasswordAsync(passwordDto.UserId, passwordDto.Password);
+                return Ok(userDto);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
         }
 
         [HttpDelete("{id:guid}")]
@@ -76,7 +104,6 @@ namespace HCM.Auth.Controllers
             {
                 return BadRequest(e.Message);
             }
-
         }
     }
 }

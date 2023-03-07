@@ -21,6 +21,7 @@ public class EmployeeViewModel
     public DateTime HireDate { get; set; }
 
     [Required]
+    [EmailAddress]
     public string Email { get; set; }
 
     [Required(ErrorMessage = "Phone Number is required.")]

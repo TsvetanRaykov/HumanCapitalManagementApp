@@ -1,6 +1,7 @@
 ﻿@page "/ListJobs"
 @using Microsoft.AspNetCore.Authorization
 @using System.Net
+@using HCM.Shared
 @attribute [Authorize]
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager NavManager
@@ -66,14 +67,14 @@ else
     protected override async Task OnInitializedAsync()
     {
         _httpClient = HttpClientFactory.CreateClient("Api");
-        _jobs = await _httpClient.GetFromJsonAsync<ICollection<JobDto>>("/api/v1/Jobs");
+        _jobs = await _httpClient.GetFromJsonAsync<ICollection<JobDto>>(HcmConstants.ApiEndpoints.Jobs);
     }
 
     private async Task DeleteConfirmed(bool confirmed)
     {
         if (confirmed && _jobDtoToDelete != null)
         {
-            var response = await _httpClient!.DeleteAsync($"/api/v1/Jobs/{_jobDtoToDelete?.Id}");
+            var response = await _httpClient!.DeleteAsync($"{HcmConstants.ApiEndpoints.Jobs}/{_jobDtoToDelete?.Id}");
             try
             {
                 response.EnsureSuccessStatusCode();

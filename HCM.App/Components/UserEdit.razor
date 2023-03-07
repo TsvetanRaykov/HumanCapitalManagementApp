@@ -1,0 +1,135 @@
+﻿@using Microsoft.AspNetCore.Components
+@using HCM.Shared
+
+@inject IHttpClientFactory HttpClientFactory
+
+@if (UserViewModel == null)
+{
+    <SpinnerComponent />
+}
+else
+{
+    <h3>@_title</h3>
+
+    <EditForm Model="UserViewModel" OnValidSubmit="@HandleValidSubmit" class="row g-3">
+        <ObjectGraphDataAnnotationsValidator />
+
+        <div class="col-12">
+            <label for="userName" class="form-label">User Name</label>
+            <InputText @bind-Value="UserViewModel.UserName" class="form-control" id="userName"></InputText>
+        </div>
+        <div class="col-md-6">
+            <label for="userGivenName" class="form-label">First Name</label>
+            <InputText @bind-Value="UserViewModel.GivenName" class="form-control" id="userGivenName"></InputText>
+        </div>
+        <div class="col-md-6">
+            <label for="userFamilyName" class="form-label">Last Name</label>
+            <InputText @bind-Value="UserViewModel.FamilyName" class="form-control" id="userFamilyName"></InputText>
+        </div>
+        <div class="col-md-4">
+            <label for="userEmail" class="form-label">Email</label>
+            <InputText @bind-Value="UserViewModel.Email" class="form-control" id="userEmail"></InputText>
+        </div>
+        <div class="col-md-4">
+            <label for="userPhone" class="form-label">Phone</label>
+            <InputText @bind-Value="UserViewModel.PhoneNumber" class="form-control" id="userPhone"></InputText>
+        </div>
+        <div class="col-md-4">
+            <label for="userRole" class="form-label">Role</label>
+            <InputSelect id="userRole" @bind-Value="UserViewModel.Role" class="form-control">
+                @if (_allRoles != null)
+                {
+                    if (string.IsNullOrWhiteSpace(UserViewModel.Role))
+                        UserViewModel.Role = _allRoles.First();
+                    foreach (var role in _allRoles)
+                    {
+                        if (role == UserViewModel.Role)
+                        {
+                            <option value="@role" selected="selected">@role</option>
+                        }
+                        else
+                        {
+                            <option value="@role">@role</option>
+                        }
+
+                    }
+                }
+                else
+                {
+                    <SpinnerComponent />
+                }
+
+            </InputSelect>
+        </div>
+        @if (!IsUpdateMode)
+        {
+            <div class="col-md-6">
+                <label for="userPassword" class="form-label">Password</label>
+                <InputText type="password" @bind-Value="UserViewModel.Passwords.Password" class="form-control" id="userPassword"></InputText>
+            </div>
+            <div class="col-md-6">
+                <label for="userConfirmPassword" class="form-label">Confirm Password</label>
+                <InputText type="password" @bind-Value="UserViewModel.Passwords.ConfirmPassword" class="form-control" id="userConfirmPassword"></InputText>
+            </div>
+        }
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary">@_submitBtnCaption</button>
+            @if (IsUpdateMode)
+            {
+                <button type="button" class="btn btn-info mx-2" @onclick="SetPassword">Set Password</button>
+            }
+        </div>
+        <ValidationSummary />
+    </EditForm>
+    <SetPasswordDialog OnPasswordChanged="HandlePasswordChanged" @ref="_setPasswordDialog"></SetPasswordDialog>
+}
+@code {
+
+    [Parameter]
+    public UserViewModel? UserViewModel { get; set; }
+
+    [Parameter]
+    public bool IsUpdateMode { get; set; }
+
+    [Parameter]
+    public EventCallback OnModelUpdated { get; set; }
+
+    [Parameter]
+    public EventCallback<UserDto> OnPasswordSet { get; set; }
+
+    private string? _title;
+    private string? _submitBtnCaption;
+    private HttpClient? _httpClient;
+    private string[]? _allRoles;
+    private SetPasswordDialog? _setPasswordDialog;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _httpClient = HttpClientFactory.CreateClient("Ums");
+        _allRoles = await _httpClient.GetFromJsonAsync<string[]>($"{HcmConstants.ApiEndpoints.Users}/roles");
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (UserViewModel == null) return;
+        _submitBtnCaption ??= IsUpdateMode ? "Update" : "Create";
+        _title ??= IsUpdateMode ? $"Edit User {UserViewModel?.UserName}" : "Add User";
+
+    }
+
+    private async void HandleValidSubmit()
+    {
+        await OnModelUpdated.InvokeAsync();
+    }
+
+    private void SetPassword()
+    {
+        _setPasswordDialog?.ShowSetPassword(UserViewModel?.Id, UserViewModel?.UserName);
+    }
+
+    private void HandlePasswordChanged(UserDto user)
+    {
+        OnPasswordSet.InvokeAsync(user);
+    }
+
+}

@@ -1,6 +1,7 @@
 ﻿@page "/ListDepartments"
 @using Microsoft.AspNetCore.Authorization
 @using System.Net
+@using HCM.Shared
 @attribute [Authorize]
 
 @inject IHttpClientFactory HttpClientFactory
@@ -67,14 +68,14 @@ else
     protected override async Task OnInitializedAsync()
     {
         _httpClient = HttpClientFactory.CreateClient("Api");
-        _departments = await _httpClient.GetFromJsonAsync<ICollection<DepartmentDto>>("/api/v1/Departments");
+        _departments = await _httpClient.GetFromJsonAsync<ICollection<DepartmentDto>>(HcmConstants.ApiEndpoints.Departments);
     }
 
     private async Task DeleteConfirmed(bool confirmed)
     {
         if (confirmed && _departmentToDelete != null)
         {
-            var response = await _httpClient!.DeleteAsync($"/api/v1/Departments/{_departmentToDelete?.Id}");
+            var response = await _httpClient!.DeleteAsync($"{HcmConstants.ApiEndpoints.Departments}/{_departmentToDelete?.Id}");
             try
             {
                 response.EnsureSuccessStatusCode();

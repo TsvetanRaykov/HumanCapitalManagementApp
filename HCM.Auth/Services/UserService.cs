@@ -53,7 +53,7 @@ public class UserService : IUserService
         return userDto;
     }
 
-    public async Task<UserDto> UpdateUserAsync(UserWithPasswordDto user)
+    public async Task<UserDto> UpdateUserAsync(UserDto user)
     {
         var dbUser = await UsersWithRoles
             .FirstOrDefaultAsync(u => u.Id == user.Id);
@@ -61,11 +61,6 @@ public class UserService : IUserService
         if (dbUser == null)
             throw new Exception($"User {user.UserName} not found");
 
-        if (user.Password != null && await _userManager.CheckPasswordAsync(dbUser, user.Password))
-        {
-            await _userManager.RemovePasswordAsync(dbUser);
-            await _userManager.AddPasswordAsync(dbUser, user.Password);
-        }
 
         await EnsureRolesAsync(dbUser, user.Role);
 
@@ -76,14 +71,14 @@ public class UserService : IUserService
         return _mapper.Map(dbUser, user);
     }
 
-    public async Task<UserDto> CreateUserAsync(UserWithPasswordDto user)
+    public async Task<UserDto> CreateUserAsync(UserDto user, string password)
     {
-        if (string.IsNullOrWhiteSpace(user.Password))
+        if (string.IsNullOrWhiteSpace(password))
             throw new Exception("Password is required.");
 
         var dbUser = _mapper.Map(user, new ApplicationUser());
 
-        var result = await _userManager.CreateAsync(dbUser, user.Password);
+        var result = await _userManager.CreateAsync(dbUser, password);
         EnsureSuccess(result);
 
         try
@@ -99,9 +94,17 @@ public class UserService : IUserService
         return _mapper.Map<UserDto>(dbUser);
     }
 
-    public Task<string?> SetPasswordAsync(UserDto user, string password)
+    public async Task<UserDto> SetPasswordAsync(string? userId, string password)
     {
-        throw new NotImplementedException();
+        var dbUser = await _userManager.FindByIdAsync(userId);
+
+        if (dbUser == null)
+            throw new Exception($"User with Id {userId} not found");
+
+        EnsureSuccess(await _userManager.RemovePasswordAsync(dbUser));
+        EnsureSuccess(await _userManager.AddPasswordAsync(dbUser, password));
+
+        return _mapper.Map<UserDto>(dbUser);
     }
 
     private IQueryable<ApplicationUser> UsersWithRoles => _userManager.Users

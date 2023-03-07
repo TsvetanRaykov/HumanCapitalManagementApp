@@ -1,6 +1,7 @@
 ﻿@page "/AddJob"
 @using Microsoft.AspNetCore.Authorization
 @using AutoMapper
+@using HCM.Shared
 
 @attribute [Authorize]
 @inject IHttpClientFactory HttpClientFactory
@@ -27,7 +28,8 @@
         var jobDto = Mapper.Map<JobDto>(_job);
         try
         {
-            var response = await HttpClientFactory.CreateClient("Api").PostAsJsonAsync("/api/v1/Jobs", jobDto);
+            var response = await HttpClientFactory.CreateClient("Api")
+                .PostAsJsonAsync(HcmConstants.ApiEndpoints.Jobs, jobDto);
             response.EnsureSuccessStatusCode();
             return $"Job {jobDto.Title} created.";
         }
@@ -42,7 +44,8 @@
     }
     private async void ConfirmationResult(bool confirmed)
     {
-        var notify = confirmed ? await CreateJobAsync() : string.Empty;
+        if (!confirmed) return;
+        var notify = await CreateJobAsync();
         _toast?.ShowToast(new ToastMessage(notify));
     }
 

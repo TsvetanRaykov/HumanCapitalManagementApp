@@ -3,9 +3,9 @@ using HCM.Shared.Data.DTO;
 
 namespace HCM.App.Models.Mapping;
 
-public class DepartmentProfile : Profile
+public class DepartmentMappingProfile : Profile
 {
-    public DepartmentProfile()
+    public DepartmentMappingProfile()
     {
         CreateMap<DepartmentViewModel, DepartmentDto>();
         CreateMap<DepartmentDto, DepartmentViewModel>();

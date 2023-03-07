@@ -34,6 +34,11 @@
 
     <ConfirmDialog ConfirmationChanged="DeleteConfirmed" @ref="DeleteConfirmation"></ConfirmDialog>
 }
+else
+{
+    <SpinnerComponent/>
+}
+
 
 @code
 {
@@ -54,7 +59,7 @@
     private void ConfirmDelete(EmployeeDto employee)
     {
         _employeeToDelete = employee;
-        DeleteConfirmation?.Show("Confirm Employee Deletion", $"The Employe record for {_employeeToDelete.FirstName} {_employeeToDelete.LastName} will be deleted.");
+        DeleteConfirmation?.Show("Confirm Employee Deletion", $"The Employee record for {_employeeToDelete.FirstName} {_employeeToDelete.LastName} will be deleted.");
     }
 
     private void EditEmployeeRedirect(EmployeeDto context)

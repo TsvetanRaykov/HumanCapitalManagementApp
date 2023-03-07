@@ -2,6 +2,7 @@
 @using Microsoft.AspNetCore.Authorization
 @using AutoMapper
 @using System.Net
+@using HCM.Shared
 @attribute [Authorize]
 @inject IHttpClientFactory HttpClientFactory
 @inject IMapper Mapper
@@ -29,7 +30,7 @@
     protected override async Task OnInitializedAsync()
     {
         _httpClient = HttpClientFactory.CreateClient("Api");
-        var employeeDto = await _httpClient.GetFromJsonAsync<EmployeeDto>($"/api/v1/Employees/{EmployeeId}");
+        var employeeDto = await _httpClient.GetFromJsonAsync<EmployeeDto>($"{HcmConstants.ApiEndpoints.Employees}/{EmployeeId}");
         _employeeViewModel = Mapper.Map<EmployeeViewModel>(employeeDto);
     }
 
@@ -40,14 +41,15 @@
 
     private async void ConfirmationResult(bool confirmed)
     {
-        var notify = confirmed ? await UpdateEmployeeAsync() : string.Empty;
+        if (!confirmed) return;
+        var notify = await UpdateEmployeeAsync();
         _toast?.ShowToast(new ToastMessage(notify));
     }
 
     private async Task<string?> UpdateEmployeeAsync()
     {
         var employeeDto = Mapper.Map<EmployeeDto>(_employeeViewModel);
-        var response = await _httpClient!.PutAsJsonAsync("/api/v1/Employees", employeeDto);
+        var response = await _httpClient!.PutAsJsonAsync(HcmConstants.ApiEndpoints.Employees, employeeDto);
         try
         {
             if (_httpClient != null)

@@ -4,9 +4,9 @@ using HCM.Shared.Data.DTO;
 
 namespace HCM.App.Models.Mapping;
 
-public class JobProfile : Profile
+public class JobMappingProfile : Profile
 {
-    public JobProfile()
+    public JobMappingProfile()
     {
         CreateMap<JobViewModel, JobDto>()
             .ForMember(dest => dest.MinSalary, opt => opt.MapFrom(src => decimal.Parse(src.MinSalaryString)))

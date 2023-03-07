@@ -2,6 +2,7 @@
 @using HCM.App.Models
 @using HCM.Shared.Data.DTO
 @using System.ComponentModel.Design
+@using HCM.Shared
 
 @inject IHttpClientFactory HttpClientFactory
 
@@ -111,8 +112,8 @@ else
     protected override async Task OnInitializedAsync()
     {
         _httpClient = HttpClientFactory.CreateClient("Api");
-        _allDepartments = await _httpClient.GetFromJsonAsync<DepartmentDto[]>("/api/v1/Departments");
-        _allJobs = await _httpClient.GetFromJsonAsync<JobDto[]>("/api/v1/Jobs");
+        _allDepartments = await _httpClient.GetFromJsonAsync<DepartmentDto[]>(HcmConstants.ApiEndpoints.Departments);
+        _allJobs = await _httpClient.GetFromJsonAsync<JobDto[]>(HcmConstants.ApiEndpoints.Jobs);
     }
 
     protected override void OnParametersSet()

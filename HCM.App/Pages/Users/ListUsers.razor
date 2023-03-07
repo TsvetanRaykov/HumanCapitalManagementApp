@@ -1,19 +1,107 @@
 ﻿@page "/ListUsers"
 @using Microsoft.AspNetCore.Authorization
+@using HCM.Shared
 @attribute [Authorize(Roles = "admin")]
-
+@inject NavigationManager NavManager
 @inject IHttpClientFactory HttpClientFactory
-<h3>ListUsers</h3>
+
+<h3>List Users</h3>
+
+@if (_users != null && _users.Any())
+{
+    <QuickGrid Items="_users.AsQueryable()">
+        <PropertyColumn Property="u=>u.UserName" Sortable="true" Title="User Name"></PropertyColumn>
+        <PropertyColumn Property="e=>e.GivenName" Sortable="true" Title="First Name"></PropertyColumn>
+        <PropertyColumn Property="e=>e.FamilyName" Sortable="true" Title="Last Name"></PropertyColumn>
+        <PropertyColumn Property="e=>e.Email" Sortable="true" Title="Email"></PropertyColumn>
+        <PropertyColumn Property="e=>e.PhoneNumber" Sortable="true" Title="Phone Number"></PropertyColumn>
+        <PropertyColumn Property="e=>e.Role" Sortable="true" Title="Role"></PropertyColumn>
+
+        <TemplateColumn Title="Actions" Class="hcm-template-column">
+            <Tooltip Title="Edit User">
+                <button type="button" class="btn btn-primary" @onclick="@(() => EditUserRedirect(context))"><i class="bi bi-person-fill-gear"></i></button>
+            </Tooltip>
+            <Tooltip Title="Delete User">
+                <button type="button" class="btn btn-danger" @onclick="@(() => ConfirmDelete(context))"><i class="bi bi-person-fill-x"></i></button>
+            </Tooltip>
+            <Tooltip Title="Change Password">
+                <button type="button" class="btn btn-info" @onclick="@(() => ChangePassword(context))"><i class="bi bi-person-fill-lock"></i></button>
+            </Tooltip>
+        </TemplateColumn>
+    </QuickGrid>
+
+    <ConfirmDialog ConfirmationChanged="DeleteConfirmed" @ref="_deleteConfirmation"></ConfirmDialog>
+
+    <SetPasswordDialog OnPasswordChanged="HandlePasswordChanged" @ref="_setPasswordDialog"></SetPasswordDialog>
+
+    <ToastComponent @ref="_toast" Delay="5000"></ToastComponent>
+}
+else
+{
+    <SpinnerComponent />
+}
 
 @code {
 
-    private UserDto[] _users;
+    private ICollection<UserViewModel>? _users;
+    private HttpClient? _httpClient;
 
     protected override async Task OnInitializedAsync()
     {
+        _httpClient = HttpClientFactory.CreateClient("Ums");
+        _users = await _httpClient.GetFromJsonAsync<ICollection<UserViewModel>>(HcmConstants.ApiEndpoints.Users);
+    }
 
-        var users = await HttpClientFactory.CreateClient("Ums").GetFromJsonAsync<UserDto[]>("api/v1/Users");
+    private UserViewModel? _userToDelete;
+    private ConfirmDialog? _deleteConfirmation;
+    private SetPasswordDialog? _setPasswordDialog;
+    private ToastComponent? _toast;
 
+    private async void DeleteConfirmed(bool confirmed)
+    {
+        if (!confirmed || _userToDelete == null) return;
+        var response = await _httpClient!
+            .DeleteAsync($"{HcmConstants.ApiEndpoints.Users}/{_userToDelete?.Id}");
+        try
+        {
+            response.EnsureSuccessStatusCode();
+
+            var userDto = await response.Content.ReadFromJsonAsync<UserDto>();
+
+            _users?.Remove(_userToDelete!);
+            var notify = $"User {userDto?.UserName} has been deleted";
+            _toast?.ShowToast(new ToastMessage(notify));
+
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (HttpRequestException e)
+        {
+            var notify = await response.Content.ReadAsStringAsync();
+            Console.WriteLine(notify);
+            Console.WriteLine(e.Message);
+            _toast?.ShowToast(new ToastMessage("Delete operation failed"));
+        }
+    }
+
+    private void ConfirmDelete(UserViewModel user)
+    {
+        _userToDelete = user;
+        _deleteConfirmation?.Show("Confirm User Deletion", $"The User record for {_userToDelete.UserName} will be deleted.");
+    }
+
+    private void EditUserRedirect(UserViewModel context)
+    {
+        NavManager.NavigateTo($"/EditUser/{context.Id}");
+    }
+
+    private void ChangePassword(UserViewModel context)
+    {
+        _setPasswordDialog?.ShowSetPassword(context.Id, context.UserName);
+    }
+
+    private void HandlePasswordChanged(UserDto user)
+    {
+        _toast?.ShowToast(new ToastMessage($"User {user.UserName} has updated password."));
     }
 
 }

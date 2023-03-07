@@ -18,7 +18,7 @@ builder.Services.AddHttpClient("Api", httpClient =>
 
 builder.Services.AddHttpClient("Ums", httpClient =>
     {
-        httpClient.BaseAddress = new Uri("https://api:7000");
+        httpClient.BaseAddress = new Uri("https://identityserver:7000");
     })
     .AddHttpMessageHandler<UmsAuthorizationMessageHandler>();
 
