@@ -1,4 +1,3 @@
-using System.Reflection;
 using HCM.App;
 using HCM.App.Handlers;
 using HCM.Shared;
@@ -17,18 +16,26 @@ builder.Services.AddHttpClient("Api", httpClient =>
     })
     .AddHttpMessageHandler<ApiAuthorizationMessageHandler>();
 
+builder.Services.AddHttpClient("Ums", httpClient =>
+    {
+        httpClient.BaseAddress = new Uri("https://api:7000");
+    })
+    .AddHttpMessageHandler<UmsAuthorizationMessageHandler>();
+
 builder.Services.AddOidcAuthentication(remoteAuthenticationOptions =>
 {
     remoteAuthenticationOptions.ProviderOptions.Authority = builder.Configuration["Authentication:Authority"];
     remoteAuthenticationOptions.ProviderOptions.ClientId = builder.Configuration["Authentication:ClientId"];
     remoteAuthenticationOptions.ProviderOptions.ResponseType = "code";
     remoteAuthenticationOptions.ProviderOptions.DefaultScopes.Add(HcmConstants.SupportedCustomOidcScopes.HcmApiScope);
+    remoteAuthenticationOptions.ProviderOptions.DefaultScopes.Add(HcmConstants.SupportedCustomOidcScopes.HcmUmsScope);
     remoteAuthenticationOptions.ProviderOptions.DefaultScopes.Add("email");
     remoteAuthenticationOptions.ProviderOptions.DefaultScopes.Add("roles");
     remoteAuthenticationOptions.UserOptions.RoleClaim = "role";
 });
 
 builder.Services.AddScoped<ApiAuthorizationMessageHandler>();
+builder.Services.AddScoped<UmsAuthorizationMessageHandler>();
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 

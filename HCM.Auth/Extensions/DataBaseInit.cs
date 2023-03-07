@@ -58,7 +58,7 @@ public static class DataBaseInit
             {
                 Name = "HCM.Ums",
                 DisplayName = "UMS",
-                Scopes = new List<string> { HcmConstants.SupportedCustomOidcScopes.UmsApiScope }
+                Scopes = new List<string> { HcmConstants.SupportedCustomOidcScopes.HcmUmsScope }
             }.ToEntity());
 
             await configurationDbContext.SaveChangesAsync();
@@ -72,7 +72,7 @@ public static class DataBaseInit
                 DisplayName = "API"
             }.ToEntity(), new ApiScope
             {
-                Name = HcmConstants.SupportedCustomOidcScopes.UmsApiScope,
+                Name = HcmConstants.SupportedCustomOidcScopes.HcmUmsScope,
                 DisplayName = "UMS"
             }.ToEntity());
 
@@ -90,7 +90,7 @@ public static class DataBaseInit
                 AllowedScopes = new List<string>
             {
                 HcmConstants.SupportedCustomOidcScopes.HcmApiScope,
-                HcmConstants.SupportedCustomOidcScopes.UmsApiScope,
+                HcmConstants.SupportedCustomOidcScopes.HcmUmsScope,
                 "profile",
                 "openid",
                 "email",
@@ -122,7 +122,7 @@ public static class DataBaseInit
                 AllowedScopes = new List<string>
                 {
                     HcmConstants.SupportedCustomOidcScopes.HcmApiScope,
-                    HcmConstants.SupportedCustomOidcScopes.UmsApiScope
+                    HcmConstants.SupportedCustomOidcScopes.HcmUmsScope
                 },
                 AllowedCorsOrigins = new List<string>
             {

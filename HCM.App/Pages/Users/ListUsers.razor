@@ -1,8 +1,19 @@
 ﻿@page "/ListUsers"
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize(Roles = "admin")]
+
+@inject IHttpClientFactory HttpClientFactory
 <h3>ListUsers</h3>
 
 @code {
-    
+
+    private UserDto[] _users;
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        var users = await HttpClientFactory.CreateClient("Ums").GetFromJsonAsync<UserDto[]>("api/v1/Users");
+
+    }
+
 }

@@ -46,6 +46,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
     });
 
+builder.Services.AddCors(corsOptions =>
+{
+    corsOptions.AddDefaultPolicy(corsPolicyBuilder =>
+        {
+            corsPolicyBuilder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+        }
+    );
+});
+
 builder.Services.AddRazorPages();
 builder.Services.AddControllers();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
@@ -54,6 +63,8 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddTransient<RoleResolver>();
 
 var app = builder.Build();
+
+app.UseCors();
 
 app.UseHttpsRedirection();
 
