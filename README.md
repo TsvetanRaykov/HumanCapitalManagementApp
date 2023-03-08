@@ -46,7 +46,9 @@ The following ports are exposed:
 ## Notes
 
 There is one pre-added user with admin role in main app (https://localhost:7003): 
+
 *username:* tsvetan.raykov 
+
 *password:* P@$$w0rd
 
 Grafana dashboard (http://localhost:3000) can be accessed with default credentials (user/pass : admin/admin)
