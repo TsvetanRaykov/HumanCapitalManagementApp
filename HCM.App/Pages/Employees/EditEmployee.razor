@@ -1,11 +1,10 @@
 ﻿@page "/EditEmployee/{EmployeeId:int}"
 @using Microsoft.AspNetCore.Authorization
-@using AutoMapper
 @using System.Net
+@using HCM.App.Models.Mapping
 @using HCM.Shared
 @attribute [Authorize]
 @inject IHttpClientFactory HttpClientFactory
-@inject IMapper Mapper
 
 <PageTitle>Edit Employee</PageTitle>
 
@@ -31,7 +30,7 @@
     {
         _httpClient = HttpClientFactory.CreateClient("Api");
         var employeeDto = await _httpClient.GetFromJsonAsync<EmployeeDto>($"{HcmConstants.ApiEndpoints.Employees}/{EmployeeId}");
-        _employeeViewModel = Mapper.Map<EmployeeViewModel>(employeeDto);
+        _employeeViewModel = employeeDto.ToEmployeeViewModel();
     }
 
     private void ConfirmUpdate()
@@ -48,7 +47,7 @@
 
     private async Task<string?> UpdateEmployeeAsync()
     {
-        var employeeDto = Mapper.Map<EmployeeDto>(_employeeViewModel);
+        var employeeDto = _employeeViewModel.ToEmployeeDto();
         var response = await _httpClient!.PutAsJsonAsync(HcmConstants.ApiEndpoints.Employees, employeeDto);
         try
         {

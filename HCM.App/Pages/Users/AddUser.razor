@@ -1,11 +1,10 @@
 ﻿@page "/AddUser"
 @using Microsoft.AspNetCore.Authorization
-@using AutoMapper
 @using System.Net
+@using HCM.App.Models.Mapping
 @using HCM.Shared
 @attribute [Authorize(Roles = "admin")]
 @inject IHttpClientFactory HttpClientFactory
-@inject IMapper Mapper
 
 <PageTitle>Add User</PageTitle>
 
@@ -38,7 +37,7 @@
 
     private async Task<string?> CreateUserAsync()
     {
-        var userDto = Mapper.Map<UserWithPasswordDto>(_userViewModel);
+        var userDto = _userViewModel.ToUserWithPasswordDto();
         var response = await HttpClientFactory.CreateClient("Ums")
             .PostAsJsonAsync(HcmConstants.ApiEndpoints.Users, userDto);
         try

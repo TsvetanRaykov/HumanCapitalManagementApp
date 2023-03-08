@@ -37,6 +37,4 @@ builder.Services.AddOidcAuthentication(remoteAuthenticationOptions =>
 builder.Services.AddScoped<ApiAuthorizationMessageHandler>();
 builder.Services.AddScoped<UmsAuthorizationMessageHandler>();
 
-builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-
 await builder.Build().RunAsync();

@@ -1,11 +1,10 @@
 ﻿@page "/EditUser/{UserId:guid}"
 @using Microsoft.AspNetCore.Authorization
-@using AutoMapper
 @using HCM.Shared
 @using System.Net
+@using HCM.App.Models.Mapping
 @attribute [Authorize(Roles = "admin")]
 @inject IHttpClientFactory HttpClientFactory
-@inject IMapper Mapper
 
 <PageTitle>Edit User</PageTitle>
 
@@ -45,7 +44,7 @@
 
     private async Task<string?> UpdateUserAsync()
     {
-        var userDto = Mapper.Map<UserDto>(_userViewModel);
+        var userDto = _userViewModel.ToUserDto();
         var response = await HttpClientFactory.CreateClient("Ums")
             .PutAsJsonAsync(HcmConstants.ApiEndpoints.Users, userDto);
         try

@@ -1,10 +1,9 @@
 ﻿@page "/EditDepartment/{DepartmentId:int}"
 @using Microsoft.AspNetCore.Authorization
-@using AutoMapper
+@using HCM.App.Models.Mapping
 @using HCM.Shared
 @attribute [Authorize]
 @inject IHttpClientFactory HttpClientFactory
-@inject IMapper Mapper
 
 <PageTitle>Edit Department</PageTitle>
 
@@ -28,7 +27,7 @@
     {
         _httpClient = HttpClientFactory.CreateClient("Api");
         var department = await _httpClient.GetFromJsonAsync<DepartmentDto>($"{HcmConstants.ApiEndpoints.Departments}/{DepartmentId}");
-        _departmentViewModel = Mapper.Map<DepartmentViewModel>(department);
+        _departmentViewModel = department?.ToDepartmentViewModel();
     }
 
     private void ConfirmUpdate()
@@ -45,7 +44,7 @@
 
     private async Task<string?> UpdateDepartmentAsync()
     {
-        var departmentDto = Mapper.Map<DepartmentDto>(_departmentViewModel);
+        var departmentDto = _departmentViewModel.ToDepartmentDto();
         try
         {
             if (_httpClient != null)

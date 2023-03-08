@@ -71,7 +71,7 @@ public class UserService : IUserService
         return _mapper.Map(dbUser, user);
     }
 
-    public async Task<UserDto> CreateUserAsync(UserDto user, string password)
+    public async Task<UserDto> CreateUserAsync(UserDto user, string? password)
     {
         if (string.IsNullOrWhiteSpace(password))
             throw new Exception("Password is required.");

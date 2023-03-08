@@ -1,21 +1,31 @@
-﻿using System.Globalization;
-using AutoMapper;
-using HCM.Shared.Data.DTO;
+﻿using HCM.Shared.Data.DTO;
+using System.Globalization;
 
 namespace HCM.App.Models.Mapping;
 
-public class JobMappingProfile : Profile
+public static class JobMappingProfile
 {
-    public JobMappingProfile()
+    public static JobViewModel ToJobViewModel(this JobDto? dto)
     {
-        CreateMap<JobViewModel, JobDto>()
-            .ForMember(dest => dest.MinSalary, opt => opt.MapFrom(src => decimal.Parse(src.MinSalaryString)))
-            .ForMember(dest => dest.MaxSalary, opt => opt.MapFrom(src => decimal.Parse(src.MaxSalaryString)));
+        return new JobViewModel
+        {
+            Title = dto.Title,
+            Description = dto.Description,
+            Id = dto.Id,
+            MaxSalaryString = dto.MaxSalary.ToString("F", CultureInfo.InvariantCulture),
+            MinSalaryString = dto.MinSalary.ToString("F", CultureInfo.InvariantCulture)
+        };
+    }
 
-        CreateMap<JobDto, JobViewModel>()
-            .ForMember(dest => dest.MinSalaryString,
-                opt => opt.MapFrom(src => src.MinSalary.ToString("F", CultureInfo.InvariantCulture)))
-            .ForMember(dest => dest.MaxSalaryString,
-                opt => opt.MapFrom(src => src.MaxSalary.ToString("F", CultureInfo.InvariantCulture)));
+    public static JobDto ToJobDto(this JobViewModel? vm)
+    {
+        return new JobDto
+        {
+            Id = vm.Id,
+            Title = vm.Title,
+            Description = vm.Description,
+            MaxSalary = decimal.Parse(vm.MaxSalaryString),
+            MinSalary = decimal.Parse(vm.MinSalaryString)
+        };
     }
 }

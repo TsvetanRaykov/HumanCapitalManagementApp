@@ -1,11 +1,10 @@
 ﻿@page "/AddJob"
 @using Microsoft.AspNetCore.Authorization
-@using AutoMapper
 @using HCM.Shared
+@using HCM.App.Models.Mapping
 
 @attribute [Authorize]
 @inject IHttpClientFactory HttpClientFactory
-@inject IMapper Mapper
 
 <PageTitle>Add Job</PageTitle>
 
@@ -25,7 +24,7 @@
 
     private async Task<string?> CreateJobAsync()
     {
-        var jobDto = Mapper.Map<JobDto>(_job);
+        var jobDto = _job.ToJobDto();
         try
         {
             var response = await HttpClientFactory.CreateClient("Api")

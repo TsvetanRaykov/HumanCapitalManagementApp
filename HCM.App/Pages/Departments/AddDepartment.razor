@@ -1,10 +1,9 @@
 ﻿@page "/AddDepartment"
 @using Microsoft.AspNetCore.Authorization
-@using AutoMapper
 @using HCM.Shared
+@using HCM.App.Models.Mapping
 @attribute [Authorize]
 @inject IHttpClientFactory HttpClientFactory
-@inject IMapper Mapper
 
 <PageTitle>Add Department</PageTitle>
 
@@ -24,7 +23,7 @@
 
     private async Task<string?> CreateDepartmentAsync()
     {
-        var departmentDto = Mapper.Map<DepartmentDto>(_department);
+        var departmentDto = _department.ToDepartmentDto();
         try
         {
             var response = await HttpClientFactory.CreateClient("Api").PostAsJsonAsync(HcmConstants.ApiEndpoints.Departments, departmentDto);
